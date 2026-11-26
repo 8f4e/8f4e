@@ -97,13 +97,13 @@ typed table indices, but raw integers should not automatically become callable w
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/` - value type, function metadata, and compiled output contracts.
-- `packages/compiler/src/semantic/` - function reference parsing, resolution, and reachability metadata.
-- `packages/compiler/src/stackAnalysis/` - function-reference stack metadata and indirect-call validation.
-- `packages/compiler/src/instructionCompilers/` - `call_indirect` bytecode emission.
-- `packages/compiler/packages/wasm-codegen/packages/wasm-utils/src/` - table and element-section helpers, if table emission
+- `compiler/packages/language-spec/src/` - value type, function metadata, and compiled output contracts.
+- `compiler/src/semantic/` - function reference parsing, resolution, and reachability metadata.
+- `compiler/src/stackAnalysis/` - function-reference stack metadata and indirect-call validation.
+- `compiler/src/instructionCompilers/` - `call_indirect` bytecode emission.
+- `compiler/packages/wasm-codegen/packages/wasm-utils/src/` - table and element-section helpers, if table emission
   needs shared utils.
-- `packages/compiler/docs/` - user-facing function reference and indirect-call documentation.
+- `compiler/docs/` - user-facing function reference and indirect-call documentation.
 
 ## Risks & Considerations
 

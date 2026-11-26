@@ -33,6 +33,6 @@ development dependencies. The web Nx release excludes `@8f4e/runtime-linux` and 
 To publish native executables, manually run **Linux runtime / Release** from `main`. It builds and tests both
 architectures, smoke-tests the extracted executable, and publishes `.tar.gz` archives on a GitHub release tagged
 `@8f4e/runtime-linux@<version>`. The version
-comes from `packages/runtime-linux/package.json`; update that manifest and the root lockfile in a PR before the
+comes from `apps/runtime-linux/package.json`; update that manifest and the root lockfile in a PR before the
 next native release. Existing release tags/assets are not overwritten. This workflow does not version web packages,
-record web release metrics, or deploy Cloudflare sites. See the [runtime documentation](../packages/runtime-linux/README.md).
+record web release metrics, or deploy Cloudflare sites. See the [runtime documentation](../apps/runtime-linux/README.md).

@@ -47,8 +47,8 @@ and malformed-input behavior in any optimization justified by the measurements.
 
 ## Affected Components
 
-- `packages/editor/plugins/code-rendering/src/block-highlights/parseHighlightBlocks.ts`
-- `packages/editor/plugins/code-rendering/src/block-highlights/deriveBlockHighlights.ts`
+- `editor/plugins/code-rendering/src/block-highlights/parseHighlightBlocks.ts`
+- `editor/plugins/code-rendering/src/block-highlights/deriveBlockHighlights.ts`
 - Block-highlight parser and geometry tests, plus benchmark results.
 
 ## Risks & Considerations

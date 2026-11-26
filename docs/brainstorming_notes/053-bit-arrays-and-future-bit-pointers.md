@@ -11,9 +11,9 @@ a possible later extension with their own representation and access rules. All n
 
 ## Motivation
 
-A packed 256 by 256 binary image for [Rule 110](../../packages/examples/src/projects/visuals/rule110.8f4e) needs
+A packed 256 by 256 binary image for [Rule 110](../../examples/src/projects/visuals/rule110.8f4e) needs
 8,192 data bytes, compared with 65,536 bytes for one unsigned byte per pixel. The existing
-[byte-buffer and grid helpers](../../packages/compiler/packages/stdlib/README.md#byte-buffers-and-grids), together
+[byte-buffer and grid helpers](../../compiler/packages/stdlib/README.md#byte-buffers-and-grids), together
 with explicit bit operations, support that representation through byte pointers and dimensions.
 
 A language-level array could also express the logical data: a collection of bits rather than a collection of
@@ -114,7 +114,7 @@ mask = 1 << bit position
 For example, `bit[] pattern 10 1 0 1` has ten logical elements and backing bytes `0xA0, 0x00`. The low six bits of
 the final byte are padding, outside the logical array.
 
-Declarations retain the normal [four-byte allocation grid](../../packages/compiler/docs/allocation-units.md).
+Declarations retain the normal [four-byte allocation grid](../../compiler/docs/allocation-units.md).
 Storage bytes and reserved allocation bytes are distinct:
 
 | Logical bits | Data bytes | Reserved bytes on the allocation grid |
@@ -153,7 +153,7 @@ byte. Atomic bit manipulation would require a separate language and memory-order
 
 ## Byte addresses and metadata queries
 
-The existing [metadata queries](../../packages/compiler/docs/prefixes.md) keep their units explicit. For
+The existing [metadata queries](../../compiler/docs/prefixes.md) keep their units explicit. For
 `bit[] flags 10`:
 
 | Expression | Proposed result |
@@ -195,7 +195,7 @@ has a whole-byte stride.
 ## Binary textures and row padding
 
 A bit array is a flat sequence. It carries no image width, height, or row stride. The
-[texture runtime's `1bit` format](../../packages/editor/plugins/texture-runtime/README.md) instead starts every
+[texture runtime's `1bit` format](../../editor/plugins/texture-runtime/README.md) instead starts every
 image row on a byte boundary. These layouts coincide when the image width is a multiple of eight.
 
 For the current Rule 110 dimensions, this declaration would use the existing texture layout directly:
@@ -217,7 +217,7 @@ not infer them from texture directives or change array layout when a view is add
 
 ## Compiler and host contracts
 
-The [memory contracts](../../packages/compiler/packages/language-spec/src/memory.ts) currently describe a whole
+The [memory contracts](../../compiler/packages/language-spec/src/memory.ts) currently describe a whole
 byte width per element. Packed arrays need an explicit layout distinction between ordinary byte-sized elements
 and packed bits. The contract must retain:
 

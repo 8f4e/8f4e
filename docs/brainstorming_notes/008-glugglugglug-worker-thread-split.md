@@ -324,7 +324,7 @@ Cross-Origin-Embedder-Policy: require-corp
 ## Proposed Package Structure
 
 ```
-packages/editor/packages/
+editor/core/
 ├── glugglugglug-core/          # Worker-safe buffer building (NEW)
 │   ├── src/
 │   │   ├── buffers/

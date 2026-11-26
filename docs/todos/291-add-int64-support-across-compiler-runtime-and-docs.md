@@ -84,7 +84,7 @@ The recommended direction is to use `bigint` for host/runtime-facing `int64` val
 
 ## Validation Checkpoints
 
-- `rg -n "float64|i64|int64|BigInt64Array" packages/compiler packages/editor packages/runtime docs`
+- `rg -n "float64|i64|int64|BigInt64Array" compiler editor packages/runtime docs`
 - `npx nx run-many --target=test --projects=compiler,editor,web-ui`
 - `npx nx run-many --target=typecheck --all`
 
@@ -98,13 +98,13 @@ The recommended direction is to use `bigint` for host/runtime-facing `int64` val
 
 ## Affected Components
 
-- `packages/compiler/src/instructionCompilers` - Add `int64` declaration and instruction support.
-- `packages/compiler/src/types.ts` - Extend memory/stack/type metadata for 64-bit integers.
-- `packages/compiler/src/wasmUtils` - Add or expose `i64` opcodes/utilities where needed.
-- `packages/compiler/src/utils` - Update memory parsing, alignment, validation, and resolution helpers.
-- `packages/editor` and `packages/editor/packages/editor-core/packages/web-ui` - Add host/runtime handling and rendering support for `int64` memory values.
-- `packages/editor/packages/compiler-worker` or equivalent live-update path - Add safe `int64` default patching.
-- `packages/compiler/docs` - Add comprehensive `int64` documentation.
+- `compiler/src/instructionCompilers` - Add `int64` declaration and instruction support.
+- `compiler/src/types.ts` - Extend memory/stack/type metadata for 64-bit integers.
+- `compiler/src/wasmUtils` - Add or expose `i64` opcodes/utilities where needed.
+- `compiler/src/utils` - Update memory parsing, alignment, validation, and resolution helpers.
+- `editor` and `editor/core/web-ui` - Add host/runtime handling and rendering support for `int64` memory values.
+- `editor/plugins/compiler/packages/compiler-worker` or equivalent live-update path - Add safe `int64` default patching.
+- `compiler/docs` - Add comprehensive `int64` documentation.
 
 ## Risks & Considerations
 

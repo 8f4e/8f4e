@@ -93,14 +93,14 @@ The decision was implemented on 2026-06-15 in commit `6c77b8fb8335ff6add01c2e4c6
 
 The current implementation is reflected in:
 
-- [Constant resolver](../../packages/compiler/packages/sub-program/packages/constant-resolver/src/index.ts), which
+- [Constant resolver](../../compiler/packages/sub-program/packages/constant-resolver/src/index.ts), which
   evaluates literals and constant operands and reports unresolved constant values;
-- [Compiler orchestration](../../packages/compiler/packages/sub-program/src/compileSubProgram.ts), which resolves
+- [Compiler orchestration](../../compiler/packages/sub-program/src/compileSubProgram.ts), which resolves
   constants before planning memory;
-- [Resolver tests](../../packages/compiler/packages/sub-program/packages/constant-resolver/src/index.test.ts), which
+- [Resolver tests](../../compiler/packages/sub-program/packages/constant-resolver/src/index.test.ts), which
   cover rejection of memory-dependent constants and preservation of memory operands for later stages.
 
 ## Related Documents
 
 - [Original brainstorming note: Decouple Constants From Memory](../brainstorming_notes/archived/049-decouple-constants-from-memory.md)
-- [Compiler Design](../../packages/compiler/docs/compiler-design.md)
+- [Compiler Design](../../compiler/docs/compiler-design.md)

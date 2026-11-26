@@ -1,6 +1,17 @@
 {
 	"name": "@8f4e/release",
 	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"inputs": [
+				"{workspaceRoot}/scripts/workspace-package-roots.mjs",
+				"{workspaceRoot}/scripts/workspace-package-roots.test.mjs"
+			],
+			"options": {
+				"commands": [{ "command": "node --test scripts/workspace-package-roots.test.mjs", "forwardAllArgs": false }],
+				"cwd": "{workspaceRoot}"
+			}
+		},
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,
@@ -34,7 +45,7 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/editor-website"],
+					"projects": ["@8f4e/editor-webapp"],
 					"target": "build"
 				}
 			],
@@ -57,7 +68,7 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
+					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-webapp", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
 					"target": "test",
 					"options": "forward"
 				}

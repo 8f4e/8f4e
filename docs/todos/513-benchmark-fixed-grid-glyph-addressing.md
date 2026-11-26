@@ -75,10 +75,10 @@ The mask texture sampling, palette lookup, and blending work remain part of both
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/src/shaders.ts` - Source addressing.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/src/renderer.ts` - Uniforms and textures.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/atlasLayout.ts` - Grid contract.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts` - Shape identifiers.
+- `editor/core/glugglugglug/src/shaders.ts` - Source addressing.
+- `editor/core/glugglugglug/src/renderer.ts` - Uniforms and textures.
+- `editor/core/sprite-generator/src/atlasLayout.ts` - Grid contract.
+- `editor/core/sprite-generator/src/index.ts` - Shape identifiers.
 - Existing renderer, generator, editor, and connector rendering fixtures and benchmark tooling.
 
 ## Related Items

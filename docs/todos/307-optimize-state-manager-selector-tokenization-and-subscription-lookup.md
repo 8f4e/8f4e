@@ -15,9 +15,9 @@ completed: null
 The state manager currently does repeated string splitting and repeated path traversal during every `set(...)` call.
 
 Current behavior:
-- [packages/editor/packages/editor-core/packages/state-manager/src/subscribe.ts](packages/editor/packages/editor-core/packages/state-manager/src/subscribe.ts) tokenizes selectors when subscriptions are created
-- [packages/editor/packages/editor-core/packages/state-manager/src/subscribeToValue.ts](packages/editor/packages/editor-core/packages/state-manager/src/subscribeToValue.ts) duplicates the same tokenization flow
-- [packages/editor/packages/editor-core/packages/state-manager/src/set.ts](packages/editor/packages/editor-core/packages/state-manager/src/set.ts) splits the selector again on every update
+- [editor/core/state-manager/src/subscribe.ts](editor/core/state-manager/src/subscribe.ts) tokenizes selectors when subscriptions are created
+- [editor/core/state-manager/src/subscribeToValue.ts](editor/core/state-manager/src/subscribeToValue.ts) duplicates the same tokenization flow
+- [editor/core/state-manager/src/set.ts](editor/core/state-manager/src/set.ts) splits the selector again on every update
 - `set(...)` then calls `getValueByPath(...)`, which splits the selector yet again for every matching subscription
 
 Why this is a problem:
@@ -66,7 +66,7 @@ Possible implementation shape:
 
 ## Validation Checkpoints
 
-- `rg -n "split\\('\\.'\\)|getValueByPath|subscribeToValue|createSubscribe" packages/editor/packages/editor-core/packages/state-manager/src`
+- `rg -n "split\\('\\.'\\)|getValueByPath|subscribeToValue|createSubscribe" editor/core/state-manager/src`
 - `npx nx run state-manager:test`
 - `npx nx run state-manager:typecheck`
 
@@ -80,10 +80,10 @@ Possible implementation shape:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/state-manager/src/set.ts` - current hot-path repeated selector work
-- `packages/editor/packages/editor-core/packages/state-manager/src/subscribe.ts` - duplicated subscription setup
-- `packages/editor/packages/editor-core/packages/state-manager/src/subscribeToValue.ts` - duplicated subscription setup
-- `packages/editor/packages/editor-core/packages/state-manager/src/getValueByPath.ts` - likely source for a token-based internal variant
+- `editor/core/state-manager/src/set.ts` - current hot-path repeated selector work
+- `editor/core/state-manager/src/subscribe.ts` - duplicated subscription setup
+- `editor/core/state-manager/src/subscribeToValue.ts` - duplicated subscription setup
+- `editor/core/state-manager/src/getValueByPath.ts` - likely source for a token-based internal variant
 
 ## Risks & Considerations
 

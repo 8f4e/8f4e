@@ -1,0 +1,47 @@
+{
+	"name": "@8f4e/semantic-reference-resolver",
+	"sourceRoot": "compiler/packages/sub-program/packages/semantic-reference-resolver/src",
+	"projectType": "library",
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
+			"dependsOn": ["^build"],
+			"options": {
+				"command": "rm -rf dist && tsc --emitDeclarationOnly && vite build",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write compiler/packages/sub-program/packages/semantic-reference-resolver/src compiler/packages/sub-program/packages/semantic-reference-resolver/tests",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "rm -rf dist && concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\"",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"test": {
+			"executor": "@nx/vitest:test",
+			"outputs": ["{workspaceRoot}/coverage/@8f4e/semantic-reference-resolver"],
+			"dependsOn": ["^build"],
+			"options": {
+				"config": "{projectRoot}/vitest.config.ts",
+				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/semantic-reference-resolver"
+			}
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "tsc --noEmit",
+				"cwd": "{projectRoot}"
+			}
+		}
+	},
+	"tags": ["type:library", "scope:core"]
+}

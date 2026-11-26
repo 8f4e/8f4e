@@ -7,26 +7,26 @@ compiled results, input notifications, lifecycle state, and publication order. T
 the config ownership checked after extraction, for future architectural discussion.
 
 - **Shared compiler state and statistics.** Core defines compiled-module/function lookups, memory plans, defaults,
-  exposures, and compilation status in [the compiler state type](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/program-compiler/types.ts).
-  [Default editor state](../../packages/editor/packages/editor-core/packages/editor-state/src/defaultEditorState.ts)
+  exposures, and compilation status in [the compiler state type](../../editor/core/editor-state-types/src/features/program-compiler/types.ts).
+  [Default editor state](../../editor/core/editor-state/src/defaultEditorState.ts)
   also initializes compiler-specific statistics, even when the compiler plugin is omitted.
 
-- **Connector geometry (presentation extracted).** The [connectors plugin](../../packages/editor/plugins/connectors/src/layout/deriveConnectors.ts)
+- **Connector geometry (presentation extracted).** The [connectors plugin](../../editor/plugins/connectors/src/layout/deriveConnectors.ts)
   derives endpoints at declaration and `expose` rows from compiler memory plans and exposure targets.
-  Core's [MemoryIdentifier type](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/types.ts)
+  Core's [MemoryIdentifier type](../../editor/core/editor-state-types/src/features/code-blocks/types.ts)
   still carries a compiler-owned planned declaration for generic memory lookup.
 
-- **Memory lookup services.** [Target resolution](../../packages/editor/packages/editor-core/packages/editor-state/src/memory/resolveMemoryTarget.ts)
-  and [identifier/pointer resolution](../../packages/editor/packages/editor-core/packages/editor-state/src/memory/resolveMemoryIdentifier.ts)
+- **Memory lookup services.** [Target resolution](../../editor/core/editor-state/src/memory/resolveMemoryTarget.ts)
+  and [identifier/pointer resolution](../../editor/core/editor-state/src/memory/resolveMemoryIdentifier.ts)
   read compiler plans and exposure records. Most memory widgets inherit this dependency through core's exported helpers.
 
 - **Compiler config ownership (checked).** The plugin owns the `recompileDebounceDelay` schema, default, and reader in
-  [its config module](../../packages/editor/plugins/compiler/src/editor-config.ts), and registers/removes the schema in
-  [its compilation effect](../../packages/editor/plugins/compiler/src/compilation.ts). Core's config type, default state,
+  [its config module](../../editor/plugins/compiler/src/editor-config.ts), and registers/removes the schema in
+  [its compilation effect](../../editor/plugins/compiler/src/compilation.ts). Core's config type, default state,
   and validators contain no compiler-specific setting. The shared schema-contribution mechanism is the same generic
   extension point used by other plugins.
 
-- **Config value resolution (result dependency).** The shared [schema resolver](../../packages/editor/packages/editor-core/packages/editor-state/src/editor-config/schemaValidator.ts)
+- **Config value resolution (result dependency).** The shared [schema resolver](../../editor/core/editor-state/src/editor-config/schemaValidator.ts)
   resolves the `memory-address` format through compiler-backed memory lookup. Removing direct compiler-state reads from
   consumers would still leave this indirect path. This depends on compiled memory metadata rather than ownership of a
   compiler setting.
@@ -36,20 +36,20 @@ the config ownership checked after extraction, for future architectural discussi
 
 - **Diagnostics and assertions (presentation extracted).** Core retains contributor-owned raw error lists and assertion
   results containing compiler assertion-site types. The compiler publishes its errors under `compiler`; test-runtime
-  publishes failed source assertions under `test-runtime`. The [error-messages plugin](../../packages/editor/plugins/error-messages/src/index.ts)
+  publishes failed source assertions under `test-runtime`. The [error-messages plugin](../../editor/plugins/error-messages/src/index.ts)
   owns wrapping, reserved rows, and drawing, without interpreting compiler status or assertion results.
 
-- **Rendering refresh and WASM execution.** The [render projection](../../packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/src/projection.ts)
-  subscribes to compiler status. The [WASM overlay drawer](../../packages/editor/packages/editor-core/packages/web-ui/src/drawers/wasmOverlayTexture.ts)
+- **Rendering refresh and WASM execution.** The [render projection](../../editor/core/web-ui/packages/render-projection/src/projection.ts)
+  subscribes to compiler status. The [WASM overlay drawer](../../editor/core/web-ui/src/drawers/wasmOverlayTexture.ts)
   instantiates compiled code, knows its host/assertion imports, and resolves compiler memory symbols. Generic texture
   drawing and execution of the compiled overlay are distinct responsibilities to reconsider.
 
-- **Compilation-specific input revisions.** The [project editing service](../../packages/editor/packages/editor-core/packages/editor-state/src/project/transactions.ts)
+- **Compilation-specific input revisions.** The [project editing service](../../editor/core/editor-state/src/project/transactions.ts)
   settles editing, block creation/deletion, and generated constants before advancing `compilerInputRevision`.
   The compiler plugin subscribes directly to the revision, which is separate from the general project-change
   revision so edits that do not affect compilation inputs need not schedule work.
 
-- **Artifact event and publication order.** [Editor core](../../packages/editor/packages/editor-core/src/index.ts)
+- **Artifact event and publication order.** [Editor core](../../editor/core/editor-core/src/index.ts)
   consumes `compilationSucceeded` with `ProgramArtifacts` containing memory and bytecode. The compiler plugin must
   publish its handles and this event before metadata subscriptions run and `compiler.isCompiling` becomes false,
   so consumers see matching memory, metadata, and code. The event carries results, but the required sequence is an
@@ -60,15 +60,15 @@ the config ownership checked after extraction, for future architectural discussi
   compiler releases its worker. Ordering is part of the integration contract, while core's plugin installer and
   disposal event remain generic.
 
-- **Shared source-model contract (intentional).** [Project serialization](../../packages/editor/packages/editor-core/packages/editor-state/src/project/serialization/serializeToProject.ts)
+- **Shared source-model contract (intentional).** [Project serialization](../../editor/core/editor-state/src/project/serialization/serializeToProject.ts)
   and loading use `ProjectObjectModel` from `@8f4e/language-spec`. The compiler plugin consumes that same model through
   the public serialization helper. Keep this shared input-language contract: the editor is built for the 8f4e compiler,
   and persistence and history use the same model. A separate editor source model is not planned.
 
-- **Already-extracted metadata consumers.** [Tooltips](../../packages/editor/plugins/tooltips/src/state/effect.ts)
-  and the [stack widget](../../packages/editor/plugins/stack/src/state/directive.ts) read compiler facts through editor
+- **Already-extracted metadata consumers.** [Tooltips](../../editor/plugins/tooltips/src/state/effect.ts)
+  and the [stack widget](../../editor/plugins/stack/src/state/directive.ts) read compiler facts through editor
   state. A candidate first step is to give their plugin factories a compiler-owned facts getter and update subscription.
-  Tooltip [live-value drawing](../../packages/editor/plugins/tooltips/src/drawer/draw.ts) also uses the core memory
+  Tooltip [live-value drawing](../../editor/plugins/tooltips/src/drawer/draw.ts) also uses the core memory
   resolver, so constructor injection needs to cover memory metadata as well as stack analysis and execution order.
 
 - **Other plugin consumers.** Binary assets, MIDI, and assertion markers observe compiler plans or status directly.
@@ -76,7 +76,7 @@ the config ownership checked after extraction, for future architectural discussi
   memory lookup helpers. Injected capabilities could make these dependencies explicit without adding compiler services
   to the shared editor plugin context.
 
-- **Test-only package dependency (resolved).** [editor-state's package manifest](../../packages/editor/packages/editor-core/packages/editor-state/package.json)
+- **Test-only package dependency (resolved).** [editor-state's package manifest](../../editor/core/editor-state/package.json)
   declares `@8f4e/compiler` in development dependencies. Its remaining imports are in tests; production source uses
   `ProjectObjectModel` from `@8f4e/language-spec`.
 

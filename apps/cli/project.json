@@ -1,0 +1,41 @@
+{
+	"name": "@8f4e/cli",
+	"projectType": "application",
+	"sourceRoot": "src",
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
+			"options": {
+				"command": "vite build && tsc -p tsconfig.build.json",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write apps/cli/src",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"test": {
+			"executor": "@nx/vitest:test",
+			"outputs": ["{workspaceRoot}/coverage/@8f4e/cli"],
+			"dependsOn": ["^build", "build"],
+			"inputs": ["default", "^default", { "projects": ["@8f4e/examples"], "input": "production" }],
+			"options": {
+				"config": "{projectRoot}/vitest.config.ts",
+				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/cli"
+			}
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["^build"],
+			"options": {
+				"command": "tsc --noEmit",
+				"cwd": "{projectRoot}"
+			}
+		}
+	},
+	"tags": ["type:tooling", "scope:core"]
+}

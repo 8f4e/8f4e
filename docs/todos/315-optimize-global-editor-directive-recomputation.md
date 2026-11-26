@@ -18,8 +18,8 @@ The global editor directives effect currently rescans every code block whenever:
 - `graphicHelper.selectedCodeBlockForProgrammaticEdit.code` changes
 
 Current behavior:
-- [packages/editor/packages/editor-core/packages/editor-state/src/features/global-editor-directives/effect.ts](packages/editor/packages/editor-core/packages/editor-state/src/features/global-editor-directives/effect.ts) always calls the global resolver over the full project
-- [packages/editor/packages/editor-core/packages/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts](../../packages/editor/packages/editor-core/packages/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts) loops through every code block to rebuild the resolved state and error list
+- [editor/core/editor-state/src/features/global-editor-directives/effect.ts](editor/core/editor-state/src/features/global-editor-directives/effect.ts) always calls the global resolver over the full project
+- [editor/core/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts](../../editor/core/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts) loops through every code block to rebuild the resolved state and error list
 
 Why this is a problem:
 - the selected-block subscriptions are frequent while editing
@@ -72,8 +72,8 @@ Possible implementation shape:
 
 ## Validation Checkpoints
 
-- `sed -n '1,200p' packages/editor/packages/editor-core/packages/editor-state/src/features/global-editor-directives/effect.ts`
-- `sed -n '1,240p' packages/editor/packages/editor-core/packages/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts`
+- `sed -n '1,200p' editor/core/editor-state/src/features/global-editor-directives/effect.ts`
+- `sed -n '1,240p' editor/core/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts`
 - `npx nx run @8f4e/editor-state:test`
 
 ## Success Criteria
@@ -85,9 +85,9 @@ Possible implementation shape:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/global-editor-directives/effect.ts` - currently triggers full recomputation on every relevant edit
-- `packages/editor/packages/editor-core/packages/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts` - currently resolves from a full code block scan
-- `packages/editor/packages/editor-core/packages/editor-state/src/directives/global/` - likely home for block-level contribution caching helpers
+- `editor/core/editor-state/src/features/global-editor-directives/effect.ts` - currently triggers full recomputation on every relevant edit
+- `editor/core/editor-state/src/directives/global/resolveGlobalEditorDirectives.ts` - currently resolves from a full code block scan
+- `editor/core/editor-state/src/directives/global/` - likely home for block-level contribution caching helpers
 
 ## Risks & Considerations
 

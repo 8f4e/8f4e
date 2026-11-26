@@ -35,8 +35,8 @@ Possible approaches:
 
 ### Step 2: Update compiler/docs as needed
 
-- Update `packages/compiler/src/instructionCompilers/remainder.ts` if runtime guarding is selected.
-- Update `packages/compiler/docs/instructions/arithmetic.md` to describe the divisor-zero behavior.
+- Update `compiler/src/instructionCompilers/remainder.ts` if runtime guarding is selected.
+- Update `compiler/docs/instructions/arithmetic.md` to describe the divisor-zero behavior.
 
 ### Step 3: Add coverage
 
@@ -51,9 +51,9 @@ Possible approaches:
 
 ## Affected Components
 
-- `packages/compiler/src/instructionCompilers/remainder.ts` - integer remainder code generation and validation.
-- `packages/compiler/tests/instructions/` - runtime-level compiler coverage.
-- `packages/compiler/docs/instructions/arithmetic.md` - user-facing behavior note.
+- `compiler/src/instructionCompilers/remainder.ts` - integer remainder code generation and validation.
+- `compiler/tests/instructions/` - runtime-level compiler coverage.
+- `compiler/docs/instructions/arithmetic.md` - user-facing behavior note.
 
 ## Notes
 

@@ -71,7 +71,7 @@ Then `count`, `sizeof`, `max`, and `min` become small query evaluators rather th
 
 - `npx nx run compiler:test -- --run src/semantic/resolveCompileTimeArgument.test.ts src/utils/memoryData.test.ts tests/instructions/constantExpressions.test.ts`
 - `npx nx run @8f4e/compiler:typecheck`
-- `rg -n "referenceKind === '.*element|pointee-element|intermodular-element" packages/compiler/src/semantic/resolveCompileTimeArgument.ts`
+- `rg -n "referenceKind === '.*element|pointee-element|intermodular-element" compiler/src/semantic/resolveCompileTimeArgument.ts`
 
 ## Success Criteria
 
@@ -82,10 +82,10 @@ Then `count`, `sizeof`, `max`, and `min` become small query evaluators rather th
 
 ## Affected Components
 
-- `packages/compiler/src/semantic/resolveCompileTimeArgument.ts`
-- `packages/compiler/src/utils/memoryData.ts`
-- `packages/compiler/packages/language-spec/src/arguments.ts`
-- `packages/compiler/src/semantic/resolveCompileTimeArgument.test.ts`
+- `compiler/src/semantic/resolveCompileTimeArgument.ts`
+- `compiler/src/utils/memoryData.ts`
+- `compiler/packages/language-spec/src/arguments.ts`
+- `compiler/src/semantic/resolveCompileTimeArgument.test.ts`
 
 ## Risks & Considerations
 

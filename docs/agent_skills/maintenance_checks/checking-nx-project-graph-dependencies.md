@@ -120,7 +120,7 @@ Nx uses the project graph to decide task ordering, affected projects, and cache 
    npm install
    npx nx graph --file=/tmp/8f4e-nx-graph-after.json
    npx nx run-many --target=typecheck --all
-   npx nx run @8f4e/editor-website:build
+   npx nx run @8f4e/editor-webapp:build
    ```
 
 ## Keep Or Fix

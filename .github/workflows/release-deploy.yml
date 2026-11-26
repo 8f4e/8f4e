@@ -20,7 +20,7 @@ jobs:
             artifact: 8f4e-website
             project: 8f4e-website
           - name: editor.8f4e.com
-            artifact: editor-website
+            artifact: editor-webapp
             project: 8f4e
     runs-on: ubuntu-latest
     timeout-minutes: 10

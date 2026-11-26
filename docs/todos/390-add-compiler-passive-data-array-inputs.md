@@ -83,11 +83,11 @@ High-level behavior:
 
 ## Affected Components
 
-- `packages/compiler/src/index.ts` - compile entry point and option plumbing.
-- `packages/compiler/src/types.ts` - public compile input type definitions.
-- `packages/compiler/src/initialMemoryDataSegments/` - target-to-segment translation and tests.
-- `packages/compiler/tests/` - integration tests for memory initialization.
-- `packages/compiler/docs/compiler-design.md` - passive data input behavior and overlay order.
+- `compiler/src/index.ts` - compile entry point and option plumbing.
+- `compiler/src/types.ts` - public compile input type definitions.
+- `compiler/src/initialMemoryDataSegments/` - target-to-segment translation and tests.
+- `compiler/tests/` - integration tests for memory initialization.
+- `compiler/docs/compiler-design.md` - passive data input behavior and overlay order.
 - Editor worker/compiler integration - eventual caller-side cache owner for decoded payloads.
 
 ## Risks & Considerations
@@ -100,8 +100,8 @@ High-level behavior:
 
 ## Related Items
 
-- **Related**: `packages/compiler/docs/compiler-design.md`
-- **Related**: `packages/compiler/src/initialMemoryDataSegments/`
+- **Related**: `compiler/docs/compiler-design.md`
+- **Related**: `compiler/src/initialMemoryDataSegments/`
 - **Related**: `docs/todos/305-reuse-wasm-instance-across-incremental-compiles.md`
 - **Related**: `docs/todos/094-handle-large-binary-assets-with-opfs.md`
 

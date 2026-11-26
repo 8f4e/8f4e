@@ -64,8 +64,8 @@ Expected semantics:
 
 ## Validation Checkpoints
 
-- `sed -n '1,220p' packages/compiler/docs/prefixes.md`
-- `rg -n "&\\*|pointee start address" packages/compiler`
+- `sed -n '1,220p' compiler/docs/prefixes.md`
+- `rg -n "&\\*|pointee start address" compiler`
 - `npx nx run @8f4e/compiler:test`
 
 ## Success Criteria
@@ -78,10 +78,10 @@ Expected semantics:
 
 ## Affected Components
 
-- `packages/compiler/src/syntax/` - identifier parsing and classification for `&*name`
-- `packages/compiler/src/utils/memoryIdentifier.ts` - prefix-aware identifier checks
-- `packages/compiler/src/instructionCompilers/push/` - pointer-address push handling
-- `packages/compiler/docs/prefixes.md` - language docs for identifier prefixes
+- `compiler/src/syntax/` - identifier parsing and classification for `&*name`
+- `compiler/src/utils/memoryIdentifier.ts` - prefix-aware identifier checks
+- `compiler/src/instructionCompilers/push/` - pointer-address push handling
+- `compiler/docs/prefixes.md` - language docs for identifier prefixes
 
 ## Risks & Considerations
 

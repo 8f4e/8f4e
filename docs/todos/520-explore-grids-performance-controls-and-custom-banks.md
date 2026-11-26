@@ -10,7 +10,7 @@ completed: null
 
 # TODO: Explore performance controls and custom banks for Grids
 
-The [Grids example](../../packages/examples/src/projects/audio/gridsPatterns.8f4e) has six 5×5 banks, X/Y morphing,
+The [Grids example](../../examples/src/projects/audio/gridsPatterns.8f4e) has six 5×5 banks, X/Y morphing,
 and separate kick, snare, and hi-hat density controls. Each bank has a lookup table pointing to editable patterns
 with 32 steps. Explore ways to perform with these banks and create new ones in the same format.
 

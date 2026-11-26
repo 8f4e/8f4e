@@ -112,12 +112,12 @@ environments.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-default/` - Browser preference detection and composition-level lifecycle.
-- `packages/editor/packages/editor-core/src/index.ts` - Initial effective color scheme passed to sprite generation.
-- `packages/editor/packages/editor-core/src/spriteSheetManager.ts` - Runtime regeneration from the effective scheme.
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/color/` - Color state and override resolution.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/` - Alternative palettes and visual tests.
-- `packages/editor/packages/editor-core/docs/color-paths.md` - Document override behavior and semantic color roles.
+- `editor/compositions/editor-default/` - Browser preference detection and composition-level lifecycle.
+- `editor/core/editor-core/src/index.ts` - Initial effective color scheme passed to sprite generation.
+- `editor/core/editor-core/src/spriteSheetManager.ts` - Runtime regeneration from the effective scheme.
+- `editor/core/editor-state/src/features/color/` - Color state and override resolution.
+- `editor/core/sprite-generator/` - Alternative palettes and visual tests.
+- `editor/core/editor-core/docs/color-paths.md` - Document override behavior and semantic color roles.
 
 ## Risks & Considerations
 
@@ -133,7 +133,7 @@ environments.
 
 ## Related Items
 
-- [Color paths](../../packages/editor/packages/editor-core/docs/color-paths.md)
+- [Color paths](../../editor/core/editor-core/docs/color-paths.md)
 
 ## References
 

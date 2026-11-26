@@ -44,12 +44,20 @@
     "wabt": "1.0.39"
   },
   "workspaces": [
-    "packages/*",
-    "packages/*/*",
-    "packages/*/*/*",
-    "packages/*/*/*/*/*",
-    "packages/*/*/*/*/*/*/*",
-    "!packages/runtime-daisy/third_party/**"
+    "apps/*",
+    "compiler",
+    "compiler/packages/*",
+    "compiler/packages/*/packages/*",
+    "editor/core/*",
+    "editor/compositions/*",
+    "editor/plugins/*",
+    "editor/plugins/*/packages/*",
+    "editor/editor-webmcp",
+    "examples",
+    "tools/config",
+    "tools/test-runner",
+    "tools/vite-plugin-sources",
+    "!apps/runtime-daisy/third_party/**"
   ],
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

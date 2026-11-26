@@ -101,7 +101,7 @@ interface PreviewWindow {
 
 function resolveEditorAssetsPath(): string {
 	const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-	return path.resolve(packageRoot, '../../packages/editor/packages/editor-website/dist');
+	return path.resolve(packageRoot, '../../apps/editor-webapp/dist');
 }
 
 async function validatePaths(inputPath: string, outputPath: string, editorAssetsPath: string): Promise<void> {
@@ -122,7 +122,7 @@ async function validatePaths(inputPath: string, outputPath: string, editorAssets
 	const editorStat = await fs.stat(editorEntryPoint).catch(() => undefined);
 	if (!editorStat?.isFile()) {
 		throw new Error(
-			`Editor website build not found at ${editorEntryPoint}. Build @8f4e/editor-website before generating previews.`
+			`Editor website build not found at ${editorEntryPoint}. Build @8f4e/editor-webapp before generating previews.`
 		);
 	}
 }

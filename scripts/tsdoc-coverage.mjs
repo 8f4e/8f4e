@@ -5,9 +5,9 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
+import { getWorkspacePackageRoots, resolveWorkspaceSourceRoot } from './workspace-package-roots.mjs';
 
 const workspaceRoot = process.cwd();
-const packagesRoot = path.resolve(workspaceRoot, 'packages');
 const outputDir = path.resolve(workspaceRoot, 'logs/tsdoc-coverage');
 const suiteName = 'tsdoc-coverage';
 
@@ -37,7 +37,8 @@ const declarationKinds = new Map([
 await main();
 
 async function main() {
-	const packageEntries = (await Promise.all(getPackageRoots().map(collectPackageEntries))).flat();
+	const { roots, recursive } = await getPackageRoots();
+	const packageEntries = (await Promise.all(roots.map(root => collectPackageEntries(root, recursive)))).flat();
 	const commit = getGitCommit();
 	const recordedAt = new Date().toISOString();
 	const loggedEntries = [];
@@ -64,14 +65,14 @@ async function main() {
 	printResults(loggedEntries, skippedEntries);
 }
 
-function getPackageRoots() {
+async function getPackageRoots() {
 	const packageRootArgs = getArgValues('--package-root');
 
 	if (packageRootArgs.length === 0) {
-		return [packagesRoot];
+		return { roots: await getWorkspacePackageRoots(workspaceRoot), recursive: false };
 	}
 
-	return packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot));
+	return { roots: packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot)), recursive: true };
 }
 
 function getArgValues(name) {
@@ -100,9 +101,16 @@ function getArgValues(name) {
 	return values;
 }
 
-async function collectPackageEntries(root) {
+async function collectPackageEntries(root, recursive) {
 	const packageJsonPaths = [];
-	await collectPackageJsonPaths(root, packageJsonPaths);
+	if (recursive) {
+		await collectPackageJsonPaths(root, packageJsonPaths);
+	} else {
+		const packageJsonPath = path.join(root, 'package.json');
+		if (await pathExists(packageJsonPath)) {
+			packageJsonPaths.push(packageJsonPath);
+		}
+	}
 
 	const packageEntries = [];
 
@@ -155,32 +163,8 @@ async function collectPackageJsonPaths(dir, packageJsonPaths) {
 
 async function resolveSourceRoot(packageRoot) {
 	const projectJsonPath = path.join(packageRoot, 'project.json');
-	const packageRelativeSourceRoot = path.join(packageRoot, 'src');
-
-	if (!(await pathExists(projectJsonPath))) {
-		return (await pathExists(packageRelativeSourceRoot)) ? packageRelativeSourceRoot : null;
-	}
-
-	const projectJson = await readJson(projectJsonPath);
-	const configuredSourceRoot = projectJson.sourceRoot;
-
-	if (!configuredSourceRoot) {
-		return (await pathExists(packageRelativeSourceRoot)) ? packageRelativeSourceRoot : null;
-	}
-
-	const sourceRootIsWorkspaceRelative =
-		configuredSourceRoot === 'packages' || configuredSourceRoot.startsWith('packages/');
-	const workspaceRelativeSourceRoot = sourceRootIsWorkspaceRelative
-		? path.resolve(workspaceRoot, configuredSourceRoot)
-		: null;
-
-	if (workspaceRelativeSourceRoot && (await pathExists(workspaceRelativeSourceRoot))) {
-		return workspaceRelativeSourceRoot;
-	}
-
-	const localSourceRoot = path.resolve(packageRoot, configuredSourceRoot);
-
-	return (await pathExists(localSourceRoot)) ? localSourceRoot : null;
+	const projectJson = (await pathExists(projectJsonPath)) ? await readJson(projectJsonPath) : {};
+	return resolveWorkspaceSourceRoot(workspaceRoot, packageRoot, projectJson.sourceRoot);
 }
 
 async function collectMeasuredFiles(root) {

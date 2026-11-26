@@ -1,5 +1,5 @@
 name = "8f4e"
-pages_build_output_dir = "./packages/editor/packages/editor-website/dist"
+pages_build_output_dir = "./apps/editor-webapp/dist"
 compatibility_date = "2026-05-29"
 
 [vars]

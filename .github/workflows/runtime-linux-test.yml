@@ -7,11 +7,11 @@ on:
     branches: [main, staging]
     paths:
       - '.github/workflows/runtime-linux-*.yml'
-      - 'packages/runtime-linux/**'
-      - 'tools/runtime-command/**'
-      - 'packages/cli/**'
-      - 'packages/compiler/**'
-      - 'packages/config/**'
+      - 'apps/runtime-linux/**'
+      - 'apps/runtime-command/**'
+      - 'apps/cli/**'
+      - 'compiler/**'
+      - 'tools/config/**'
       - 'package.json'
       - 'package-lock.json'
       - 'nx.json'
@@ -20,11 +20,11 @@ on:
     branches: [main, staging]
     paths:
       - '.github/workflows/runtime-linux-*.yml'
-      - 'packages/runtime-linux/**'
-      - 'tools/runtime-command/**'
-      - 'packages/cli/**'
-      - 'packages/compiler/**'
-      - 'packages/config/**'
+      - 'apps/runtime-linux/**'
+      - 'apps/runtime-command/**'
+      - 'apps/cli/**'
+      - 'compiler/**'
+      - 'tools/config/**'
       - 'package.json'
       - 'package-lock.json'
       - 'nx.json'

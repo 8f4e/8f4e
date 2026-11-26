@@ -2,24 +2,25 @@
 
 ## Project Map
 
-- [Compiler](packages/compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
-- [Editor](packages/editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
-  editor compositions. The editor website is the thin host for the default composition.
-- The [product website](packages/8f4e-website/README.md) hosts the landing demos, example gallery and compiler fixture
+- [Compiler](compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
+- The [CLI](apps/cli/README.md) exposes the compiler and execution tooling as command-line commands.
+- [Editor](editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
+  editor compositions. The [editor web app](apps/editor-webapp/AGENTS.md) is the thin host for the default composition.
+- The [product website](apps/8f4e-website/README.md) hosts the landing demos, example gallery and compiler fixture
   gallery. Keep full gallery catalogs out of the homepage build. Ship project sources as assets.
-- [Examples](packages/examples) ships project and module source. Consumers that discover these files depend on
+- [Examples](examples) ships project and module source. Consumers that discover these files depend on
   `@8f4e/examples` so generators and source changes participate in Nx builds and watches.
-- [Vite source collections](packages/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
+- [Vite source collections](tools/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
   selection and interpretation belong to consumers.
-- [Linux runtime](packages/runtime-linux/AGENTS.md) owns native JACK playback. The separate
-  [runtime command tool](tools/runtime-command/README.md) translates compiler metadata into numeric launch arguments.
-- [Daisy runtime](packages/runtime-daisy/README.md) loads compiled instruments from microSD on the Daisy Field.
+- [Linux runtime](apps/runtime-linux/AGENTS.md) owns native JACK playback. The separate
+  [runtime command tool](apps/runtime-command/README.md) translates compiler metadata into numeric launch arguments.
+- [Daisy runtime](apps/runtime-daisy/README.md) loads compiled instruments from microSD on the Daisy Field.
 - The compiler ABI imports shared `host.memory` with explicit limits. Hosts allocate matching shared memory.
 
 ## Build and Development
 
 - Use `nvm use` for the pinned Node version. Run Nx tasks from the repository root, for example
-  `npx nx run @8f4e/editor-website:dev` (port 3000) or `npx nx run @8f4e/8f4e-website:dev` (port 3001).
+  `npx nx run @8f4e/editor-webapp:dev` (port 3000) or `npx nx run @8f4e/8f4e-website:dev` (port 3001).
   Preserve COOP/COEP where shared memory is used.
 - Use `npx nx show project <project>` to find available targets. Use Nx builds so workspace aliases resolve to
   built exports, including when changing an API used by a Vite consumer.

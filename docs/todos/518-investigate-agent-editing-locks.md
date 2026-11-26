@@ -67,10 +67,10 @@ Any proposed lock should complement expected-revision checks. Expiration or take
 
 ## Potentially Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/project/commandApi.ts` - Transport-independent command policy and revision checks.
-- `packages/editor/packages/editor-webmcp/` - Possible explicit session tools and lifecycle integration.
-- `packages/editor/packages/editor-core/packages/web-ui/` - Possible session status and takeover interaction.
-- `packages/editor/packages/editor-website/` and `packages/8f4e-website/` - Host ownership and project-switch behavior.
+- `editor/core/editor-state/src/project/commandApi.ts` - Transport-independent command policy and revision checks.
+- `editor/editor-webmcp/` - Possible explicit session tools and lifecycle integration.
+- `editor/core/web-ui/` - Possible session status and takeover interaction.
+- `apps/editor-webapp/` and `apps/8f4e-website/` - Host ownership and project-switch behavior.
 
 ## Risks & Considerations
 

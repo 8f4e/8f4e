@@ -1,0 +1,109 @@
+{
+	"name": "@8f4e/examples",
+	"sourceRoot": "src",
+	"projectType": "library",
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": [
+				"{projectRoot}/src/modules/lookup-tables/sineLookupTable.8f4em",
+				"{projectRoot}/src/modules/lookup-tables/expLookupTable.8f4em",
+				"{projectRoot}/src/modules/lookup-tables/midiFreqLUT_12TET.8f4em",
+				"{projectRoot}/src/modules/constants/amigaPeriodIncrement.8f4em"
+			],
+			"dependsOn": ["^build"],
+			"options": {
+				"command": "node ./src/module-generators/generateModules.ts",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"generate-minblep-lut": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{projectRoot}/src/modules/lookup-tables/minBLEPLUT.8f4em"],
+			"options": {
+				"command": "node ./src/module-generators/generate-minblep-lut.ts",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write examples/src examples/tests examples/vitest.config.ts",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"dependsOn": [
+				"^build",
+				{
+					"projects": ["@8f4e/cli"],
+					"target": "test",
+					"params": "ignore"
+				}
+			],
+			"options": {
+				"commands": [
+					{
+						"command": "node ../apps/cli/bin/cli.js test \"src/modules/**/*.8f4em\"",
+						"forwardAllArgs": false
+					},
+					{
+						"command": "vitest run --config vitest.config.ts",
+						"forwardAllArgs": false
+					}
+				],
+				"cwd": "{projectRoot}"
+			}
+		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "node ./src/module-generators/generateModules.ts && tsc --watch",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"log-bytecode-size": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{workspaceRoot}/logs/bytecode-size"],
+			"dependsOn": [
+				{
+					"projects": ["@8f4e/cli"],
+					"target": "build",
+					"params": "ignore"
+				}
+			],
+			"options": {
+				"command": "node scripts/log-bytecode-sizes.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"log-compiler-coverage-counts": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{workspaceRoot}/logs/compiler-coverage-counts"],
+			"dependsOn": [
+				{
+					"projects": ["@8f4e/compiler"],
+					"target": "build",
+					"params": "ignore"
+				}
+			],
+			"options": {
+				"command": "node scripts/log-compiler-coverage-counts.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "tsc --project tsconfig.typecheck.json --noEmit",
+				"cwd": "{projectRoot}"
+			},
+			"dependsOn": ["^build"]
+		}
+	},
+	"tags": ["type:library", "scope:examples"]
+}

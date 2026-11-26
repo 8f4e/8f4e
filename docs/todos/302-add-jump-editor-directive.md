@@ -62,7 +62,7 @@ Key requirements:
 
 - `npx nx run editor:test`
 - `npx nx run editor:typecheck`
-- `rg -n "@jump|jumpToFavoriteCodeBlock|jumpToCodeBlock" packages/editor/docs packages/editor/packages/editor-core/packages/editor-state/src`
+- `rg -n "@jump|jumpToFavoriteCodeBlock|jumpToCodeBlock" editor/docs editor/core/editor-state/src`
 
 ## Success Criteria
 
@@ -75,9 +75,9 @@ Key requirements:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/directives/` - jump directive parsing, widget registration, and interaction
-- `packages/editor/packages/editor-core/packages/editor-state/src/input/blockNavigation.ts` - reused jump navigation path
-- `packages/editor/docs/editor-directives.md` - directive documentation
+- `editor/core/editor-state/src/directives/` - jump directive parsing, widget registration, and interaction
+- `editor/core/editor-state/src/input/blockNavigation.ts` - reused jump navigation path
+- `editor/docs/editor-directives.md` - directive documentation
 
 ## Risks & Considerations
 
