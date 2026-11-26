@@ -14,6 +14,6 @@ Shared workspace infrastructure and standalone development utilities live here, 
 - [compiler-benchmarks](compiler-benchmarks/README.md): measure compiler bytecode size and execution counts for benchmark programs.
 - [dx7-to-8f4e](dx7-to-8f4e/README.md): convert DX7 SysEx patches into movable 8f4e constants blocks.
 - [project-preview](project-preview/README.md): generate project preview images with the editor renderer.
-- [Release tooling](../docs/releasing.md): prepare and validate repository releases.
+- [Release tooling](release/README.md): prepare and validate repository releases and collect release metrics.
 
 The [runtime command generator](../apps/runtime-command/README.md) is an Nx application alongside the native runtimes in `apps/`.

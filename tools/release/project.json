@@ -3,14 +3,14 @@
 	"targets": {
 		"test": {
 			"executor": "nx:run-commands",
-			"inputs": [
-				"{workspaceRoot}/scripts/workspace-package-roots.mjs",
-				"{workspaceRoot}/scripts/workspace-package-roots.test.mjs"
-			],
 			"options": {
-				"commands": [{ "command": "node --test scripts/workspace-package-roots.test.mjs", "forwardAllArgs": false }],
-				"cwd": "{workspaceRoot}"
+				"commands": [{ "command": "node --test scripts/*.test.mjs", "forwardAllArgs": false }],
+				"cwd": "{projectRoot}"
 			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": { "command": "biome check --write scripts", "cwd": "{projectRoot}" }
 		},
 		"check": {
 			"executor": "nx:noop",
@@ -29,10 +29,7 @@
 					"projects": ["@8f4e/compiler-benchmarks"],
 					"target": "log-compiler-coverage-counts"
 				},
-				{
-					"projects": ["@8f4e/compiler"],
-					"target": "docs-coverage"
-				},
+				"docs-coverage",
 				{
 					"projects": ["@8f4e/8f4e-website"],
 					"target": "build"
@@ -50,7 +47,16 @@
 				}
 			],
 			"options": {
-				"command": "node scripts/log-bundle-sizes.mjs",
+				"command": "node {projectRoot}/scripts/log-bundle-sizes.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"docs-coverage": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{workspaceRoot}/logs/tsdoc-coverage"],
+			"options": {
+				"command": "node {projectRoot}/scripts/tsdoc-coverage.mjs",
 				"cwd": "{workspaceRoot}"
 			}
 		},
@@ -59,7 +65,7 @@
 			"cache": false,
 			"dependsOn": ["tests"],
 			"options": {
-				"command": "node scripts/log-test-coverage.mjs",
+				"command": "node {projectRoot}/scripts/log-test-coverage.mjs",
 				"cwd": "{workspaceRoot}"
 			}
 		},

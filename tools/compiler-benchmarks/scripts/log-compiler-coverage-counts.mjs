@@ -7,79 +7,23 @@ import fs from 'node:fs/promises';
 import { Session } from 'node:inspector/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { coverageComponents, createCoverageComponentMatcher } from './coverage-components.mjs';
+
+if (!process.execArgv.includes('--jitless')) {
+	throw new Error('Run compiler coverage counts with node --jitless (or the Nx benchmark target).');
+}
 
 const workspaceRoot = process.cwd();
 const benchmarkDir = fileURLToPath(new URL('../cases/', import.meta.url));
 const outputDir = path.resolve(workspaceRoot, 'logs/compiler-coverage-counts');
 const suiteName = 'compiler-coverage-counts';
-const schemaVersion = 2;
+const schemaVersion = 3;
 const compilerOptions = {
 	startingMemoryAllocationUnitAddress: 0,
 };
 const aggregateComponentId = 'compilerPipeline';
-const coverageComponents = [
-	{
-		id: 'compiler',
-		label: 'compiler core',
-		pathFragment: '/compiler/dist/',
-	},
-	{
-		id: 'tokenizer',
-		label: 'tokenizer',
-		pathFragment: '/compiler/packages/sub-program/packages/tokenizer/dist/',
-	},
-	{
-		id: 'constantResolver',
-		label: 'constant resolver',
-		pathFragment: '/compiler/packages/sub-program/packages/constant-resolver/dist/',
-	},
-	{
-		id: 'memoryPlanner',
-		label: 'memory planner',
-		pathFragment: '/compiler/packages/sub-program/packages/memory-planner/dist/',
-	},
-	{
-		id: 'memoryReferenceResolver',
-		label: 'memory reference resolver',
-		pathFragment: '/compiler/packages/sub-program/packages/memory-reference-resolver/dist/',
-	},
-	{
-		id: 'memoryDefaultResolver',
-		label: 'memory default resolver',
-		pathFragment: '/compiler/packages/sub-program/packages/memory-default-resolver/dist/',
-	},
-	{
-		id: 'semanticReferenceResolver',
-		label: 'semantic reference resolver',
-		pathFragment: '/compiler/packages/sub-program/packages/semantic-reference-resolver/dist/',
-	},
-	{
-		id: 'semanticUtils',
-		label: 'semantic utils',
-		pathFragment: '/compiler/packages/sub-program/packages/semantic-utils/dist/',
-	},
-	{
-		id: 'stackAnalyzer',
-		label: 'stack analyzer',
-		pathFragment: '/compiler/packages/sub-program/packages/stack-analyzer/dist/',
-	},
-	{
-		id: 'wasmCodegen',
-		label: 'wasm codegen',
-		pathFragment: '/compiler/packages/wasm-codegen/dist/',
-	},
-	{
-		id: 'compilerWasmUtils',
-		label: 'compiler wasm utils',
-		pathFragment: '/compiler/packages/wasm-codegen/packages/wasm-utils/dist/',
-	},
-	{
-		id: 'languageSpec',
-		label: 'language spec',
-		pathFragment: '/compiler/packages/language-spec/dist/',
-	},
-];
 const coverageComponentById = new Map(coverageComponents.map(component => [component.id, component]));
+const getCoverageComponent = createCoverageComponentMatcher();
 
 await main();
 
@@ -127,7 +71,14 @@ async function main() {
 
 			const existingEntry = await getLoggedBenchmarkVersion(outputPath, version);
 
-			if (isCurrentSchemaEntry(existingEntry)) {
+			// Compile every case even on a partial rerun so later cases see the same initialization history.
+			await compileProject(benchmarkCase.project, {
+				...compilerOptions,
+				resolveInclude: resolveStdlibInclude,
+			});
+			const { result: coverageResult } = await session.post('Profiler.takePreciseCoverage');
+
+			if (existingEntry) {
 				skippedCases.push({
 					sourcePath: benchmarkCase.path,
 					version,
@@ -136,23 +87,21 @@ async function main() {
 				continue;
 			}
 
-			await compileProject(benchmarkCase.project, {
-				...compilerOptions,
-				resolveInclude: resolveStdlibInclude,
-			});
-			const { result: coverageResult } = await session.post('Profiler.takePreciseCoverage');
 			const coverage = summarizeCoverage(coverageResult);
 			assertCoverageMatched(coverage, benchmarkCase);
 
 			const entry = {
 				schemaVersion,
+				measurementMode: 'jitless',
+				nodeVersion: process.version,
+				v8Version: process.versions.v8,
 				commit: gitMetadata.commit,
 				version,
 				benchmark: benchmarkCase.relativePath,
 				coverage,
 			};
 
-			await upsertLogEntry(outputPath, entry);
+			await appendLogEntry(outputPath, entry);
 			loggedCases.push({
 				...entry,
 				sourcePath: benchmarkCase.path,
@@ -220,8 +169,7 @@ function summarizeCoverage(coverageResult) {
 	};
 
 	for (const script of coverageResult) {
-		const url = script.url.split(path.sep).join('/');
-		const component = getCoverageComponent(url);
+		const component = getCoverageComponent(script.url);
 
 		if (!component) {
 			continue;
@@ -261,10 +209,6 @@ function recordFunctionCoverage(bucket, fn) {
 	for (const range of fn.ranges) {
 		bucket.rangeExecutions += range.count;
 	}
-}
-
-function getCoverageComponent(url) {
-	return coverageComponents.find(component => url.includes(component.pathFragment)) ?? null;
 }
 
 function assertCoverageMatched(coverage, benchmarkCase) {
@@ -387,14 +331,10 @@ async function getLoggedBenchmarkVersion(filePath, version) {
 		throw new Error(`${path.relative(workspaceRoot, filePath)} must contain a JSON array`);
 	}
 
-	return existingEntries.find(entry => entry?.version === version) ?? null;
+	return existingEntries.find(entry => entry?.version === version && entry?.schemaVersion === schemaVersion) ?? null;
 }
 
-function isCurrentSchemaEntry(entry) {
-	return entry?.version !== undefined && entry?.schemaVersion === schemaVersion;
-}
-
-async function upsertLogEntry(filePath, entry) {
+async function appendLogEntry(filePath, entry) {
 	await fs.mkdir(path.dirname(filePath), { recursive: true });
 
 	const existingEntries = (await pathExists(filePath)) ? await readJson(filePath) : [];
@@ -403,13 +343,7 @@ async function upsertLogEntry(filePath, entry) {
 		throw new Error(`${path.relative(workspaceRoot, filePath)} must contain a JSON array`);
 	}
 
-	const entryIndex = existingEntries.findIndex(existingEntry => existingEntry?.version === entry.version);
-
-	if (entryIndex === -1) {
-		existingEntries.push(entry);
-	} else {
-		existingEntries[entryIndex] = entry;
-	}
+	existingEntries.push(entry);
 
 	await fs.writeFile(filePath, `${JSON.stringify(existingEntries, null, '\t')}\n`);
 }
