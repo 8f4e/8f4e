@@ -258,7 +258,7 @@ test.each([false, true])('hides texture views under modal dialogs with entry exe
 	await vi.waitFor(() => {
 		editor.renderFrame();
 		expect(modalTextureSamples.map(readSample)).toEqual(expectedColors);
-		if (enabled) expect(frames[framesAddress]).toBeGreaterThan(0);
+		expect(frames[framesAddress] > 0, 'WASM frame counter advances').toBe(enabled);
 	});
 	const expectHiddenFrame = () => {
 		const before = frames[framesAddress];
