@@ -27,6 +27,10 @@ export function createTextureRenderLayer({
 	let previousConflicts = new Set<number>();
 	return {
 		draw: ({ memoryViews, blockPositions }) => {
+			if (state.dialogStack.length > 0) {
+				drawer?.releaseMemory();
+				return;
+			}
 			const { sources, conflicts } = bindings.resolveUploads(memoryViews.int32);
 			for (const address of conflicts)
 				if (!previousConflicts.has(address))
