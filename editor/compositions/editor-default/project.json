@@ -19,8 +19,8 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write editor/compositions/editor-default/src",
-        "cwd": "{workspaceRoot}"
+        "command": "biome check --write src",
+        "cwd": "{projectRoot}"
       }
     },
     "dev": {

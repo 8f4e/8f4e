@@ -23,8 +23,8 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write tools/test-runner/src tools/test-runner/vite.config.ts tools/test-runner/vitest.config.ts",
-				"cwd": "{workspaceRoot}"
+				"command": "biome check --write src vite.config.ts vitest.config.ts",
+				"cwd": "{projectRoot}"
 			}
 		},
 		"typecheck": {

@@ -40,8 +40,8 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write editor/editor-webmcp/src editor/editor-webmcp/browser-tests editor/editor-webmcp/scripts",
-        "cwd": "{workspaceRoot}"
+        "command": "biome check --write src browser-tests scripts",
+        "cwd": "{projectRoot}"
       }
     },
     "test:browser": {
