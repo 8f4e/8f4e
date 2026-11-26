@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/sub-program",
-  "sourceRoot": "compiler/packages/sub-program/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -29,7 +28,6 @@
     "test": {
       "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/@8f4e/sub-program"],
-      "dependsOn": ["^build"],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/sub-program"

@@ -1,7 +1,6 @@
 {
 	"name": "@8f4e/runtime-linux",
 	"projectType": "application",
-	"sourceRoot": "apps/runtime-linux/src",
 	"targets": {
 		"build": {
 			"executor": "nx:run-commands",

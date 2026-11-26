@@ -1,7 +1,6 @@
 {
 	"name": "@8f4e/cli",
 	"projectType": "application",
-	"sourceRoot": "src",
 	"targets": {
 		"build": {
 			"executor": "nx:run-commands",
@@ -22,7 +21,6 @@
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/cli"],
 			"dependsOn": ["^build", "build"],
-			"inputs": ["default", "^default"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/cli"

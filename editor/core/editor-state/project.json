@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-state",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -21,10 +20,7 @@
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/editor-state"
-      },
-      "dependsOn": [
-        "^build"
-      ]
+      }
     },
     "test-update": {
       "executor": "@nx/vitest:test",

@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/vite-plugin-sources",
-	"sourceRoot": "src",
 	"projectType": "library",
 	"targets": {
 		"build": {
@@ -10,7 +9,6 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
-			"dependsOn": ["^build"],
 			"outputs": ["{projectRoot}/coverage"],
 			"options": { "command": "vitest run", "cwd": "{projectRoot}" }
 		},

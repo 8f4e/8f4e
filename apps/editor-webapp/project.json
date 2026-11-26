@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-webapp",
-  "sourceRoot": "src",
   "projectType": "application",
   "targets": {
     "dev": {

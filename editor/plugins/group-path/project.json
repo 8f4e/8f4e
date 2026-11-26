@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-group-path",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -5,10 +5,11 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
-import { getWorkspacePackageRoots, resolveWorkspaceSourceRoot } from './workspace-package-roots.mjs';
+import { getOptionValues, getWorkspaceProjects } from './workspace-projects.mjs';
 
 const workspaceRoot = process.cwd();
-const outputDir = path.resolve(workspaceRoot, 'logs/tsdoc-coverage');
+const args = process.argv.slice(2);
+const outputDir = path.resolve(workspaceRoot, getOptionValues(args, '--out-dir').at(-1) ?? 'logs/tsdoc-coverage');
 const suiteName = 'tsdoc-coverage';
 
 const ignoredDirectories = new Set(['.tmp', 'dist', 'node_modules', '__snapshots__']);
@@ -37,8 +38,8 @@ const declarationKinds = new Map([
 await main();
 
 async function main() {
-	const { roots, recursive } = await getPackageRoots();
-	const packageEntries = (await Promise.all(roots.map(root => collectPackageEntries(root, recursive)))).flat();
+	const projects = await getWorkspaceProjects(workspaceRoot, getOptionValues(args, '--package-root'));
+	const packageEntries = projects.filter(project => project.sourceRoot);
 	const commit = getGitCommit();
 	const recordedAt = new Date().toISOString();
 	const loggedEntries = [];
@@ -63,108 +64,6 @@ async function main() {
 	}
 
 	printResults(loggedEntries, skippedEntries);
-}
-
-async function getPackageRoots() {
-	const packageRootArgs = getArgValues('--package-root');
-
-	if (packageRootArgs.length === 0) {
-		return { roots: await getWorkspacePackageRoots(workspaceRoot), recursive: false };
-	}
-
-	return { roots: packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot)), recursive: true };
-}
-
-function getArgValues(name) {
-	const values = [];
-
-	for (let index = 2; index < process.argv.length; index += 1) {
-		const arg = process.argv[index];
-
-		if (arg === name) {
-			const value = process.argv[index + 1];
-
-			if (!value) {
-				throw new Error(`${name} requires a value`);
-			}
-
-			values.push(value);
-			index += 1;
-			continue;
-		}
-
-		if (arg.startsWith(`${name}=`)) {
-			values.push(arg.slice(name.length + 1));
-		}
-	}
-
-	return values;
-}
-
-async function collectPackageEntries(root, recursive) {
-	const packageJsonPaths = [];
-	if (recursive) {
-		await collectPackageJsonPaths(root, packageJsonPaths);
-	} else {
-		const packageJsonPath = path.join(root, 'package.json');
-		if (await pathExists(packageJsonPath)) {
-			packageJsonPaths.push(packageJsonPath);
-		}
-	}
-
-	const packageEntries = [];
-
-	for (const packageJsonPath of packageJsonPaths.sort()) {
-		const packageRoot = path.dirname(packageJsonPath);
-		const packageJson = await readJson(packageJsonPath);
-		const packageName = packageJson.name;
-
-		if (!packageName) {
-			continue;
-		}
-
-		const sourceRoot = await resolveSourceRoot(packageRoot);
-
-		if (!sourceRoot) {
-			continue;
-		}
-
-		packageEntries.push({
-			name: packageName,
-			root: packageRoot,
-			relativeRoot: toWorkspacePath(packageRoot),
-			sourceRoot,
-			relativeSourceRoot: toWorkspacePath(sourceRoot),
-		});
-	}
-
-	return packageEntries;
-}
-
-async function collectPackageJsonPaths(dir, packageJsonPaths) {
-	const entries = await fs.readdir(dir, { withFileTypes: true });
-
-	for (const entry of entries) {
-		const entryPath = path.join(dir, entry.name);
-
-		if (entry.isDirectory()) {
-			if (!ignoredDirectories.has(entry.name)) {
-				await collectPackageJsonPaths(entryPath, packageJsonPaths);
-			}
-
-			continue;
-		}
-
-		if (entry.isFile() && entry.name === 'package.json') {
-			packageJsonPaths.push(entryPath);
-		}
-	}
-}
-
-async function resolveSourceRoot(packageRoot) {
-	const projectJsonPath = path.join(packageRoot, 'project.json');
-	const projectJson = (await pathExists(projectJsonPath)) ? await readJson(projectJsonPath) : {};
-	return resolveWorkspaceSourceRoot(workspaceRoot, packageRoot, projectJson.sourceRoot);
 }
 
 async function collectMeasuredFiles(root) {

@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/wasm-ir-simplifier",
-	"sourceRoot": "compiler/packages/sub-program/packages/wasm-ir-simplifier/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

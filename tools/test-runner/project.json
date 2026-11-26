@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/test-runner",
-	"sourceRoot": "tools/test-runner/src",
 	"projectType": "library",
 	"targets": {
 		"build": {
@@ -13,7 +12,6 @@
 		},
 		"test": {
 			"executor": "@nx/vitest:test",
-			"dependsOn": ["^build"],
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/test-runner"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",

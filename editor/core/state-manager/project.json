@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/state-manager",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/semantic-reference-resolver",
-	"sourceRoot": "compiler/packages/sub-program/packages/semantic-reference-resolver/src",
 	"projectType": "library",
 	"targets": {
 		"build": {
@@ -29,7 +28,6 @@
 		"test": {
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/semantic-reference-resolver"],
-			"dependsOn": ["^build"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/semantic-reference-resolver"

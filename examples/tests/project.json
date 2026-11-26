@@ -4,7 +4,6 @@
 	"targets": {
 		"test": {
 			"executor": "nx:run-commands",
-			"dependsOn": ["^build"],
 			"options": {
 				"commands": [{ "command": "vitest run --config vitest.config.ts", "forwardAllArgs": false }],
 				"cwd": "{projectRoot}"

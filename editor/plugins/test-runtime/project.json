@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-test-runtime",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -21,10 +20,7 @@
       "options": {
         "command": "vitest run",
         "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        "^build"
-      ]
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",

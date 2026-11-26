@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/metrics-dashboard",
-	"sourceRoot": "apps/metrics-dashboard/src",
 	"projectType": "application",
 	"targets": {
 		"build": {
@@ -23,10 +22,15 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/coverage"],
 			"options": {
-				"commands": [{ "command": "vitest run --config vitest.config.ts", "forwardAllArgs": false }],
+				"command": "vitest run --config vitest.config.ts",
 				"cwd": "{projectRoot}"
 			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": { "command": "biome check --write src vite.config.ts vitest.config.ts", "cwd": "{projectRoot}" }
 		},
 		"serve": {
 			"executor": "nx:run-commands",

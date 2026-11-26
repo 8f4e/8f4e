@@ -29,6 +29,11 @@
   Preserve COOP/COEP where shared memory is used.
 - Use `npx nx show project <project>` to find available targets. Use Nx builds so workspace aliases resolve to
   built exports, including when changing an API used by a Vite consumer.
+- Tests inherit the `^build` prerequisite. Only declare a `test.dependsOn` override when the target needs a different
+  dependency sequence.
+- Omit redundant Nx `sourceRoot` declarations; derive conventional `src/` directories from the discovered project root
+  and run commands from `{projectRoot}`. Only nonstandard release-metric source directories require project-relative
+  `metadata.metrics.sourceDirectory`. The standalone Glugglugglug submodule owns its own project metadata.
 - Each package builds into its own `dist/`. Clear it before the first emitter (`rm -rf dist && tsc` for plain
   TypeScript packages). Mixed builds clean once so later steps preserve earlier outputs.
 - Production builds and generators use `production` inputs. Tests and type checks retain their own test sources

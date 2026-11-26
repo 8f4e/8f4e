@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/tokenizer",
-	"sourceRoot": "compiler/packages/sub-program/packages/tokenizer/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

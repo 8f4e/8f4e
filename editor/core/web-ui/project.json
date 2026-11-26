@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/web-ui",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {

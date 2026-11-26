@@ -1,11 +1,10 @@
 {
 	"name": "@8f4e/stdlib",
-	"sourceRoot": "std",
+	"metadata": { "metrics": { "sourceDirectory": "std" } },
 	"projectType": "library",
 	"targets": {
 		"test": {
 			"executor": "nx:run-commands",
-			"dependsOn": ["^build"],
 			"options": {
 				"command": "vitest run",
 				"cwd": "{projectRoot}"

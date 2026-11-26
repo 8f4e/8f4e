@@ -37,6 +37,9 @@
       "cache": false
     },
     "test": {
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "default",
         "^production"

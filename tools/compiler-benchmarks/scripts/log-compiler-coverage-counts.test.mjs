@@ -32,8 +32,16 @@ test('preserves old series and records identical fresh and partial-rerun measure
 		benchmark: 'sineGenerator.8f4e',
 		coverage: { compiler: { rangeExecutions: 10 } },
 	};
+	const previousEngineEntry = {
+		...oldEntry,
+		schemaVersion: 3,
+		measurementMode: 'jitless',
+		nodeVersion: 'v22.0.0',
+		v8Version: '12.4.254.14',
+		commit: 'previous-runtime',
+	};
 	const sineLog = path.join(logDir(first), 'sineGenerator.json');
-	await fs.writeFile(sineLog, JSON.stringify([oldEntry]));
+	await fs.writeFile(sineLog, JSON.stringify([oldEntry, previousEngineEntry]));
 
 	await run(first);
 	await run(second);
@@ -41,7 +49,8 @@ test('preserves old series and records identical fresh and partial-rerun measure
 	assert.ok(filenames.length >= 5);
 	const firstSine = await readJson(sineLog);
 	assert.deepEqual(firstSine[0], oldEntry);
-	assert.equal(firstSine.length, 2);
+	assert.deepEqual(firstSine[1], previousEngineEntry);
+	assert.equal(firstSine.length, 3);
 	const expected = new Map();
 	for (const filename of filenames) {
 		const [entry] = await readJson(path.join(logDir(second), filename));
@@ -49,17 +58,18 @@ test('preserves old series and records identical fresh and partial-rerun measure
 		assert.equal(entry.measurementMode, 'jitless');
 		assert.equal(entry.schemaVersion, 3);
 		assert.equal(entry.nodeVersion, process.version);
+		assert.equal(entry.v8Version, process.versions.v8);
 		assert.ok(entry.coverage.compiler.rangeExecutions > 0);
 		assert.ok(entry.coverage.tokenizer.rangeExecutions > 0);
 		assert.deepEqual((await readJson(path.join(logDir(first), filename))).at(-1), entry);
 	}
 
 	// Repair a partially logged release and verify neither legacy nor existing deterministic entries are replaced.
-	await fs.writeFile(sineLog, JSON.stringify([oldEntry]));
+	await fs.writeFile(sineLog, JSON.stringify([oldEntry, previousEngineEntry]));
 	await run(first);
 	for (const [filename, entry] of expected) {
 		const entries = await readJson(path.join(logDir(first), filename));
-		assert.deepEqual(entries, filename === 'sineGenerator.json' ? [oldEntry, entry] : [entry]);
+		assert.deepEqual(entries, filename === 'sineGenerator.json' ? [oldEntry, previousEngineEntry, entry] : [entry]);
 	}
 	const { stdout } = await run(first);
 	assert.match(stdout, /already has entries/);

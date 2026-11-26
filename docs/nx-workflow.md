@@ -97,9 +97,21 @@ workspaces by their package names; native applications without npm manifests dec
 - **package.json**: Updated scripts to use Nx commands
 - **Workspaces**: Still configured for package linking compatibility
 
+Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use conventional `src/` directories.
+Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
+physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
+
+Release metrics discover package names, roots, versions, and test targets from the Nx project graph. They select
+projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
+`package-lock.json` or recursively scanning the repository. They use `src/` relative to each project's discovered root;
+nonstandard layouts declare only a local `metadata.metrics.sourceDirectory` (for example `std` in the standard library).
+
 ## Production and test inputs
 
 Builds use `production` and `^production`; tests use their own `default` files and dependency `production` files. Type checks keep their own test files. Test-only project imports still create graph edges even when declared as dev dependencies, so use local sample fixtures when the source package is not part of the behavior under test.
+
+Tests build their workspace dependencies by default because imports resolve to built package exports, unless a target
+has a more specific dependency configuration.
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.

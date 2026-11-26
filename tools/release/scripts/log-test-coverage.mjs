@@ -4,10 +4,11 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getWorkspacePackageRoots, resolveWorkspaceSourceRoot } from './workspace-package-roots.mjs';
+import { getOptionValues, getWorkspaceProjects } from './workspace-projects.mjs';
 
 const workspaceRoot = process.cwd();
-const outputDir = path.resolve(workspaceRoot, 'logs/test-coverage');
+const args = process.argv.slice(2);
+const outputDir = path.resolve(workspaceRoot, getOptionValues(args, '--out-dir').at(-1) ?? 'logs/test-coverage');
 const suiteName = 'test-coverage';
 
 const ignoredDirectories = new Set(['.tmp', 'coverage', 'dist', 'node_modules']);
@@ -18,8 +19,8 @@ const coverageMetrics = ['statements', 'branches', 'functions', 'lines'];
 await main();
 
 async function main() {
-	const { roots, recursive } = await getPackageRoots();
-	const packageEntries = (await Promise.all(roots.map(root => collectPackageEntries(root, recursive)))).flat();
+	const projects = await getWorkspaceProjects(workspaceRoot, getOptionValues(args, '--package-root'));
+	const packageEntries = projects.filter(project => !ignoredPackages.has(project.name));
 	const commit = getGitCommit();
 	const recordedAt = new Date().toISOString();
 	const loggedEntries = [];
@@ -83,103 +84,6 @@ async function main() {
 	}
 
 	printResults(loggedEntries, skippedEntries);
-}
-
-async function getPackageRoots() {
-	const packageRootArgs = getArgValues('--package-root');
-
-	if (packageRootArgs.length === 0) {
-		return { roots: await getWorkspacePackageRoots(workspaceRoot), recursive: false };
-	}
-
-	return { roots: packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot)), recursive: true };
-}
-
-function getArgValues(name) {
-	const values = [];
-
-	for (let index = 2; index < process.argv.length; index += 1) {
-		const arg = process.argv[index];
-
-		if (arg === name) {
-			const value = process.argv[index + 1];
-
-			if (!value) {
-				throw new Error(`${name} requires a value`);
-			}
-
-			values.push(value);
-			index += 1;
-			continue;
-		}
-
-		if (arg.startsWith(`${name}=`)) {
-			values.push(arg.slice(name.length + 1));
-		}
-	}
-
-	return values;
-}
-
-async function collectPackageEntries(root, recursive) {
-	const projectJsonPaths = [];
-	if (recursive) {
-		await collectProjectJsonPaths(root, projectJsonPaths);
-	} else {
-		const projectJsonPath = path.join(root, 'project.json');
-		if (await pathExists(projectJsonPath)) {
-			projectJsonPaths.push(projectJsonPath);
-		}
-	}
-
-	const packageEntries = [];
-
-	for (const projectJsonPath of projectJsonPaths.sort()) {
-		const packageRoot = path.dirname(projectJsonPath);
-		const packageJsonPath = path.join(packageRoot, 'package.json');
-
-		if (!(await pathExists(packageJsonPath))) {
-			continue;
-		}
-
-		const [projectJson, packageJson] = await Promise.all([readJson(projectJsonPath), readJson(packageJsonPath)]);
-
-		if (!packageJson.name || ignoredPackages.has(packageJson.name)) {
-			continue;
-		}
-
-		const sourceRoot = await resolveWorkspaceSourceRoot(workspaceRoot, packageRoot, projectJson.sourceRoot);
-
-		packageEntries.push({
-			name: packageJson.name,
-			root: packageRoot,
-			relativeRoot: toWorkspacePath(packageRoot),
-			hasTestTarget: Boolean(projectJson.targets?.test),
-			sourceRoot,
-		});
-	}
-
-	return packageEntries;
-}
-
-async function collectProjectJsonPaths(dir, projectJsonPaths) {
-	const entries = await fs.readdir(dir, { withFileTypes: true });
-
-	for (const entry of entries) {
-		const entryPath = path.join(dir, entry.name);
-
-		if (entry.isDirectory()) {
-			if (!ignoredDirectories.has(entry.name)) {
-				await collectProjectJsonPaths(entryPath, projectJsonPaths);
-			}
-
-			continue;
-		}
-
-		if (entry.isFile() && entry.name === 'project.json') {
-			projectJsonPaths.push(entryPath);
-		}
-	}
 }
 
 async function findCoverageSummaryPath(packageEntry) {

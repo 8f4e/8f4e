@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/sprite-generator",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "generate-fonts": {

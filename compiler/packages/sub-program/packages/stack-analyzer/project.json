@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/stack-analyzer",
-	"sourceRoot": "compiler/packages/sub-program/packages/stack-analyzer/src",
 	"projectType": "library",
 	"targets": {
 		"build": {
@@ -28,7 +27,6 @@
 		"test": {
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/stack-analyzer"],
-			"dependsOn": ["^build"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/stack-analyzer"

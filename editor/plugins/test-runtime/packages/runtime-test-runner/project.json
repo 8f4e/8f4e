@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/runtime-test-runner",
-  "sourceRoot": "src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -34,9 +33,6 @@
       "executor": "@nx/vitest:test",
       "outputs": [
         "{workspaceRoot}/coverage/@8f4e/runtime-test-runner"
-      ],
-      "dependsOn": [
-        "^build"
       ],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",

@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/memory-default-resolver",
-	"sourceRoot": "compiler/packages/sub-program/packages/memory-default-resolver/src",
 	"projectType": "library",
 	"targets": {
 		"build": {
@@ -28,7 +27,6 @@
 		"test": {
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/memory-default-resolver"],
-			"dependsOn": ["^build"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/memory-default-resolver"
