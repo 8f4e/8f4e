@@ -11,12 +11,11 @@ async function createWorkspace(t) {
 	return root;
 }
 
-function project(name, root, { packageName = name, workspace = true, test = false, sourceDirectory } = {}) {
+function project(name, root, { packageName = name, workspace = true, sourceDirectory } = {}) {
 	return {
 		name,
 		data: {
 			root,
-			targets: test ? { test: {} } : {},
 			metadata: {
 				js: { packageName, packageVersion: '1.0.0', isInPackageManagerWorkspaces: workspace },
 				...(sourceDirectory ? { metrics: { sourceDirectory } } : {}),
@@ -34,11 +33,10 @@ test('uses Nx package membership and project metadata without reading the lockfi
 		nodes: {
 			stdlib: project('stdlib', 'compiler/stdlib', {
 				packageName: '@example/stdlib',
-				test: true,
 				sourceDirectory: 'std',
 			}),
 			ui: project('ui', 'apps/ui'),
-			tests: project('tests', 'apps/ui/tests', { test: true }),
+			tests: project('tests', 'apps/ui/tests'),
 			standalone: project('standalone', 'tools/standalone', { workspace: false }),
 			native: { name: 'native', data: { root: 'apps/native' } },
 		},
@@ -53,9 +51,7 @@ test('uses Nx package membership and project metadata without reading the lockfi
 		projectName: 'stdlib',
 		version: '1.0.0',
 		root: path.join(root, 'compiler/stdlib'),
-		relativeRoot: 'compiler/stdlib',
 		sourceRoot: path.join(root, 'compiler/stdlib/std'),
-		hasTestTarget: true,
 	});
 	assert.equal(projects[1].sourceRoot, null);
 	assert.equal(projects[0].sourceRoot, path.join(root, 'apps/ui/src'));

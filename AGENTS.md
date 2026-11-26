@@ -51,6 +51,9 @@
 - Use Vitest via Nx. Keep unit tests in `__tests__/` or colocated `*.test.ts` and `*.spec.ts` files unless local
   guidance specifies another location. Use shared helpers from `@8f4e/config/vitest`. Glugglugglug is a separate
   submodule with its own configuration.
+- Test coverage is on demand only. Use `npx nx test <project> --coverage --skip-nx-cache` when explicitly requested;
+  keep reports in package-local `coverage/` using the shared Vitest defaults. Do not enable coverage in routine
+  tests, CI, or releases, cache its artifacts with Nx, or maintain historical test coverage logs.
 - Track screenshot baselines. Vitest failure artifacts go in ignored `.vitest-attachments/`.
 
 ## Commits, Pull Requests and Releases

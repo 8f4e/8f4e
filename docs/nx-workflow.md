@@ -101,7 +101,7 @@ Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use c
 Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
 physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
 
-Release metrics discover package names, roots, versions, and test targets from the Nx project graph. They select
+Release metrics discover package names, roots, and versions from the Nx project graph. They select
 projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
 `package-lock.json` or recursively scanning the repository. They use `src/` relative to each project's discovered root;
 nonstandard layouts declare only a local `metadata.metrics.sourceDirectory` (for example `std` in the standard library).
@@ -112,6 +112,11 @@ Builds use `production` and `^production`; tests use their own `default` files a
 
 Tests build their workspace dependencies by default because imports resolve to built package exports, unless a target
 has a more specific dependency configuration.
+
+Test coverage is on demand only. Run `npx nx test <project> --coverage --skip-nx-cache` to generate a fresh report in
+the project's `coverage/` directory. The shared Vitest preset includes unimported authored production files in `src/`;
+generated data remains a production build input but is excluded from source coverage. Ordinary tests, including CI and
+release validation, do not collect coverage. Nx caches regular test results, not the coverage reports.
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.

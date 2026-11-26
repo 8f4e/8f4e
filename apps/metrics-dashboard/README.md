@@ -1,14 +1,14 @@
 # Metrics dashboard
 
-The local dashboard displays historical bundle sizes, emitted bytecode sizes, compiler execution counts, TSDoc coverage,
-and test coverage from the repository's `logs/` directory.
+The local dashboard displays historical bundle sizes, emitted bytecode sizes, compiler execution counts, and TSDoc
+coverage from the repository's `logs/` directory.
 
 Run from the workspace root:
 
 ```sh
 npx nx run @8f4e/metrics-dashboard:serve
 npx nx run @8f4e/metrics-dashboard:test
-npx nx run @8f4e/metrics-dashboard:test --coverage
+npx nx run @8f4e/metrics-dashboard:test --coverage --skip-nx-cache
 npx nx run @8f4e/metrics-dashboard:build
 ```
 

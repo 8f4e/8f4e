@@ -5,7 +5,7 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write src",
+				"command": "biome check --write src tests",
 				"cwd": "{projectRoot}"
 			}
 		},
@@ -14,6 +14,14 @@
 			"outputs": ["{projectRoot}/dist"],
 			"options": {
 				"command": "rm -rf dist && tsc",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["build"],
+			"options": {
+				"commands": [{ "command": "node --test tests/*.test.mjs", "forwardAllArgs": false }],
 				"cwd": "{projectRoot}"
 			}
 		}

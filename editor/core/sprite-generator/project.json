@@ -40,16 +40,12 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/@8f4e/sprite-generator"
-      ],
       "dependsOn": [
         "^build",
         "generate-fonts"
       ],
       "options": {
-        "config": "{projectRoot}/vitest.config.ts",
-        "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/sprite-generator"
+        "config": "{projectRoot}/vitest.config.ts"
       }
     },
     "typecheck": {
