@@ -1,8 +1,4 @@
 {
-  "extends": "@8f4e/config/tsconfig.dom.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
-  },
-  "include": ["src/**/*.ts"]
+  "extends": "@8f4e/config/tsconfig.library.json",
+  "compilerOptions": { "lib": ["es2023", "DOM"] }
 }

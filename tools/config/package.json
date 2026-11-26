@@ -24,6 +24,8 @@
       "default": "./dist/vite/index.js"
     },
     "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.library.json": "./tsconfig.library.json",
+    "./tsconfig.testing.json": "./tsconfig.testing.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./tsconfig.dom.json": "./tsconfig.dom.json",
     "./tsconfig.webworker.json": "./tsconfig.webworker.json"
@@ -39,7 +41,7 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "peerDependencies": {
-    "typescript": ">=5.0.0",
+    "typescript": ">=5.5.0",
     "vite": ">=7.0.0",
     "vitest": ">=4.0.0"
   },

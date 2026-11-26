@@ -1,5 +1,5 @@
 {
-	"extends": "@8f4e/config/tsconfig.node.json",
-	"compilerOptions": { "noEmit": true },
+	"extends": "@8f4e/config/tsconfig.base.json",
+	"compilerOptions": { "lib": ["es2023"], "types": ["node"], "noEmit": true },
 	"include": ["tests/**/*.test.ts", "vitest.config.ts"]
 }

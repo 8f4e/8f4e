@@ -1,6 +1,7 @@
 {
-	"extends": "@8f4e/config/tsconfig.dom.json",
+	"extends": "@8f4e/config/tsconfig.base.json",
 	"compilerOptions": {
+		"lib": ["es2023", "DOM"],
 		"noEmit": true,
 		"types": ["vite/client", "@vitest/browser/matchers", "@8f4e/vite-plugin-sources/client"]
 	},

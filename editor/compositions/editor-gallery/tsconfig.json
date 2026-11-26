@@ -1,10 +1,5 @@
 {
 	"extends": "@8f4e/config/tsconfig.dom.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": "src",
-		"types": ["vite/client"]
-	},
-	"include": ["src/**/*.ts"],
+	"compilerOptions": { "types": ["vite/client"] },
 	"exclude": ["node_modules", "src/**/*.test.ts", "dist"]
 }

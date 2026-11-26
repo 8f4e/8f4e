@@ -41,6 +41,9 @@
   `metadata.metrics.sourceDirectory`. The standalone Glugglugglug submodule owns its own project metadata.
 - Each package builds into its own `dist/`. Clear it before the first emitter (`rm -rf dist && tsc` for plain
   TypeScript packages). Mixed builds clean once so later steps preserve earlier outputs.
+- Use the shared TypeScript presets from `@8f4e/config` for standard library layouts and test type checking.
+  They resolve paths relative to the consuming config using `${configDir}`. Keep only project-specific overrides locally;
+  use the layout-independent base preset for nonstandard projects.
 - Production builds and generators use `production` inputs. Tests and type checks retain their own test sources
   and consume production inputs from dependencies.
 - Exclude test-only paths narrowly. Keep shipped fixtures, catalogs, stdlib, bundled modules, workers and

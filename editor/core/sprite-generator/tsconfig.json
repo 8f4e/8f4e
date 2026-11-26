@@ -1,11 +1,5 @@
 {
 	"extends": "@8f4e/config/tsconfig.dom.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": "src",
-		"allowImportingTsExtensions": true,
-		"rewriteRelativeImportExtensions": true
-	},
-	"include": ["src/**/*.ts"],
+	"compilerOptions": { "allowImportingTsExtensions": true, "rewriteRelativeImportExtensions": true },
 	"exclude": ["node_modules", "src/**/*.test.ts"]
 }

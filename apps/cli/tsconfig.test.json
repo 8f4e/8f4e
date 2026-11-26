@@ -1,17 +1,5 @@
 {
-	"extends": "./tsconfig.json",
-	"compilerOptions": {
-		"noEmit": true,
-		"rootDir": ".",
-		"lib": ["es2023"],
-		"types": ["node"]
-	},
-	"include": [
-		"src/**/*.ts",
-		"tests/**/*.test.ts"
-	],
-	"exclude": [
-		"node_modules",
-		"dist"
-	]
+	"extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+	"compilerOptions": { "rootDir": ".", "lib": ["es2023"], "types": ["node"] },
+	"include": ["src/**/*.ts", "tests/**/*.test.ts"]
 }
