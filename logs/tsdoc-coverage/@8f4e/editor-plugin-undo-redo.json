@@ -61,5 +61,26 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "34816b5c7c8e485e834312a387abc8947e1487e8",
+		"recordedAt": "2026-11-26T21:05:43.397Z",
+		"coverage": {
+			"documented": 1,
+			"total": 10,
+			"percentage": 10,
+			"byKind": {
+				"variable": {
+					"documented": 1,
+					"total": 3,
+					"percentage": 33.3
+				},
+				"function": {
+					"documented": 0,
+					"total": 7,
+					"percentage": 0
+				}
+			}
+		}
 	}
 ]

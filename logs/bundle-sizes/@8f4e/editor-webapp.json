@@ -3358,5 +3358,20 @@
 			"gzip": 65960,
 			"brotli": 56834
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-26T21:05:57.020Z",
+		"commit": "34816b5c7c8e485e834312a387abc8947e1487e8",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-webapp@7.2.1",
+		"packageName": "@8f4e/editor-webapp",
+		"projectName": "@8f4e/editor-webapp",
+		"version": "7.2.1",
+		"bytes": {
+			"raw": 212646,
+			"gzip": 66374,
+			"brotli": 57067
+		}
 	}
 ]
