@@ -70,9 +70,9 @@ async function setup(code = source, installed = true, name = 'controls') {
 		};
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
-	const click = (key = 0, line = 3) => {
+	const clickAt = (location: { x: number; y: number }) => {
 		events.dispatch('pointerdown', {
-			...point(key, line),
+			...location,
 			movementX: 0,
 			movementY: 0,
 			buttons: 1,
@@ -83,6 +83,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		});
 		events.dispatch('pointerup');
 	};
+	const click = (key = 0, line = 3) => clickAt(point(key, line));
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
 		events.dispatch('openSubMenu', { menu: 'codeBlockMenu', payload: { codeBlock } });
@@ -104,6 +105,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		point,
 		press,
 		click,
+		clickAt,
 		menuItems,
 		dispose,
 	};
@@ -114,22 +116,27 @@ afterEach(() => {
 });
 
 describe('piano plugin', () => {
-	it('draws a piano below @hide only while the block is expanded', async () => {
-		const test = await setup([...source.slice(0, 3), '; @hide', ...source.slice(3)]);
-		const pianoLine = 4;
-		expect(test.codeBlock.displayModel.sourceLineIndexToDisplayRow[pianoLine]).toBeUndefined();
+	it('draws and responds to pointer input below @hide only while the block is expanded', async () => {
+		const test = await setup([...source.slice(0, 3), '; @pos 40 20', '; @hide', ...source.slice(3)]);
+		const memory = test.compiled.memoryPlan.modules.controls.memory;
 
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 
 		test.store.set('project.selectedCodeBlock', test.codeBlock);
-		expect(test.codeBlock.displayModel.sourceLineIndexToDisplayRow[pianoLine]).toBeDefined();
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalled();
+		const key = test.point(2, 5);
+		test.clickAt(key);
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 
 		test.store.set('project.selectedCodeBlock', undefined);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
+		test.write.mockClear();
+		test.clickAt(key);
+		expect(test.write).not.toHaveBeenCalled();
 	});
 	it('rebinds drawing and interaction after compilation relocates memory without changing layout', async () => {
 		const test = await setup();
@@ -321,6 +328,37 @@ describe('piano plugin', () => {
 		test.events.dispatch(item.action!, item.payload);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
 		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
+	});
+	it('saves both visible and hidden pianos in a collapsed block', async () => {
+		const test = await setup([
+			'module controls',
+			'int[] visibleNotes 4',
+			'int visibleCount 0',
+			'; @piano &visibleNotes &visibleCount 48',
+			'; @hide',
+			'int[] hiddenNotes 4',
+			'int hiddenCount 0',
+			'; @piano &hiddenNotes &hiddenCount 60',
+			'moduleEnd',
+		]);
+		const memory = test.compiled.memoryPlan.modules.controls.memory;
+		const runtime = test.memoryViews.int32;
+		test.store.set('project.selectedCodeBlock', test.codeBlock);
+		runtime.set([50, 52], memory.visibleNotes.allocationUnitAddress);
+		runtime[memory.visibleCount.allocationUnitAddress] = 2;
+		runtime[memory.hiddenNotes.allocationUnitAddress] = 61;
+		runtime[memory.hiddenCount.allocationUnitAddress] = 1;
+		test.store.set('project.selectedCodeBlock', undefined);
+
+		const item = (await test.menuItems())[0];
+		expect(item?.action).toBe('savePianoValuesToCode');
+		test.events.dispatch(item.action!, item.payload);
+
+		expect(test.codeBlock.code).toContain('int[] visibleNotes 4 50 52');
+		expect(test.codeBlock.code).toContain('int visibleCount 2');
+		expect(test.codeBlock.code).toContain('int[] hiddenNotes 4 61');
+		expect(test.codeBlock.code).toContain('int hiddenCount 1');
+		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
 	});
 	it('uses the selected block when saving without an explicit target', async () => {
 		const test = await setup();

@@ -5,7 +5,7 @@ import type { EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoDirectiveData } from '../helpers/data';
 import { createPianoDirectiveData } from '../helpers/data';
-import type { PianoKeyboard, PianoKeyboardKey } from '../types';
+import type { PianoKeyboard, PianoKeyboardKey, PianoMemoryBindings } from '../types';
 
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]);
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -46,18 +46,14 @@ function createPianoKeyboardKeys(
 	});
 }
 
-function resolvePianoLayout(
+function preparePiano(
 	pianoKeyboard: PianoDirectiveData,
 	graphicData: EditorCodeBlock,
 	state: State,
+	bindings: PianoMemoryBindings[],
 	keyboards: PianoKeyboard[]
 ): void {
 	if (!graphicData.name) {
-		return;
-	}
-
-	const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.sourceLineIndex];
-	if (displayRow === undefined) {
 		return;
 	}
 
@@ -73,6 +69,19 @@ function resolvePianoLayout(
 		pressedKeyCount.memory.type !== 'int' ||
 		pressedKeyCount.memory.numberOfElements !== 1
 	) {
+		return;
+	}
+
+	const binding = {
+		pressedKeysListMemory: pressedKeysList.memory,
+		pressedKeyCountMemory: pressedKeyCount.memory,
+		pressedKeysListModuleId: pressedKeysList.target.moduleId,
+		pressedKeyCountModuleId: pressedKeyCount.target.moduleId,
+	};
+	bindings.push(binding);
+
+	const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.sourceLineIndex];
+	if (displayRow === undefined) {
 		return;
 	}
 
@@ -107,10 +116,7 @@ function resolvePianoLayout(
 			state.viewport.hGrid,
 			pianoKeyboard.startingMidiNote
 		),
-		pressedKeysListMemory: pressedKeysList.memory,
-		pressedKeyCountMemory: pressedKeyCount.memory,
-		pressedKeysListModuleId: pressedKeysList.target.moduleId,
-		pressedKeyCountModuleId: pressedKeyCount.target.moduleId,
+		...binding,
 		startingMidiNote: pianoKeyboard.startingMidiNote,
 	});
 }
@@ -120,6 +126,7 @@ import { PIANO_KEYBOARD_MIN_GRID_WIDTH } from './constants';
 export function registerPianoPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
+	bindingsByBlock: WeakMap<EditorCodeBlock, PianoMemoryBindings[]>,
 	keyboardsByBlock: WeakMap<EditorCodeBlock, PianoKeyboard[]>
 ): () => void {
 	const contribution = layout.createContribution();
@@ -134,9 +141,11 @@ export function registerPianoPreparation(
 				minGridWidth: items.length ? PIANO_KEYBOARD_MIN_GRID_WIDTH : undefined,
 			});
 		}
+		const bindings: PianoMemoryBindings[] = [];
 		const widgets: PianoKeyboard[] = [];
+		bindingsByBlock.set(codeBlock, bindings);
 		keyboardsByBlock.set(codeBlock, widgets);
-		for (const data of items) resolvePianoLayout(data, codeBlock, state, widgets);
+		for (const data of items) preparePiano(data, codeBlock, state, bindings, widgets);
 	});
 	return () => {
 		unsubscribe();
