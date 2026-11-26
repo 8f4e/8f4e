@@ -23,6 +23,10 @@ Each website artifact includes a top-level `404.html` that Cloudflare Pages serv
 The repository must provide the `CLOUDFLARE_API_TOKEN` Actions secret and the `CLOUDFLARE_ACCOUNT_ID` Actions
 variable. Existing release tags are required; the workflow refuses to initialize a first release.
 
+The [release tooling](../tools/release/README.md) also provides individual targets for collecting and validating metrics
+locally. Compiler execution counts use a deterministic measurement mode; the metrics dashboard keeps older JIT-enabled
+measurements in a separate historical series.
+
 ## Linux runtime releases
 
 The standalone Linux runtime has separate **Linux runtime / Test** and **Linux runtime / Release** workflows.

@@ -133,7 +133,7 @@ The 8f4e project is organized as an Nx monorepo with the following project hiera
 │   ├── <a href="./tools/config/README.md">config</a> (Shared tooling and configuration helpers for the workspace)
 │   ├── <a href="./tools/dx7-to-8f4e/README.md">dx7-to-8f4e</a> (DX7 SysEx patch converter)
 │   ├── <a href="./tools/project-preview/README.md">project-preview</a> (Project preview image generator)
-│   ├── <a href="./docs/releasing.md">release</a> (Release and validation tooling)
+│   ├── <a href="./tools/release/README.md">release</a> (Release, metrics and validation tooling)
 │   ├── <a href="./tools/test-runner/README.md">test-runner</a> (Shared native assertion execution and reporting)
 │   └── <a href="./tools/vite-plugin-sources/README.md">vite-plugin-sources</a> (Vite source discovery and lazy text collections)
 ├── <a href="./docs/README.md">docs</a> (Language and repository documentation)

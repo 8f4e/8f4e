@@ -18,8 +18,16 @@
 			"outputs": ["{workspaceRoot}/logs/compiler-coverage-counts"],
 			"dependsOn": [{ "projects": ["@8f4e/compiler"], "target": "build", "params": "ignore" }],
 			"options": {
-				"command": "node {projectRoot}/scripts/log-compiler-coverage-counts.mjs",
+				"command": "node --jitless {projectRoot}/scripts/log-compiler-coverage-counts.mjs",
 				"cwd": "{workspaceRoot}"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"dependsOn": [{ "projects": ["@8f4e/compiler"], "target": "build", "params": "ignore" }],
+			"options": {
+				"commands": [{ "command": "node --test scripts/*.test.mjs", "forwardAllArgs": false }],
+				"cwd": "{projectRoot}"
 			}
 		},
 		"lint": {

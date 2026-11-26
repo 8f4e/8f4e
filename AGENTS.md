@@ -13,6 +13,8 @@
 - [Example integration tests](examples/tests/README.md) own cross-package example regressions and depend on the CLI,
   compiler and source packages without pulling those consumers into the examples asset build. [Compiler benchmarks](tools/compiler-benchmarks/README.md)
   owns benchmark cases and measurement runners; keep both validation projects out of Nx releases.
+- [Release tooling](tools/release/README.md) owns repository-wide release metrics and validation runners.
+  Resolve measured packages by name rather than hardcoded repository paths.
 - [Vite source collections](tools/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
   selection and interpretation belong to consumers.
 - [Linux runtime](apps/runtime-linux/AGENTS.md) owns native JACK playback. The separate

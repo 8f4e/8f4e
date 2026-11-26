@@ -38,13 +38,6 @@
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/compiler"
       }
     },
-    "docs-coverage": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "node scripts/tsdoc-coverage.mjs",
-        "cwd": "{workspaceRoot}"
-      }
-    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

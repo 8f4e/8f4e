@@ -53,7 +53,7 @@ for (const [packageName, packageConfig] of Object.entries(bundleSizeConfig.packa
 		continue;
 	}
 
-	const distRoot = path.resolve(workspaceRoot, packageConfig.distDir);
+	const distRoot = path.resolve(packageRoot, packageConfig.distDir);
 
 	if (!(await pathExists(distRoot))) {
 		console.warn(`Skipping ${packageName}: no dist directory at ${path.relative(workspaceRoot, distRoot)}`);
@@ -184,7 +184,7 @@ function parseArgs(args) {
 }
 
 function printHelp() {
-	console.log(`Usage: node scripts/log-bundle-sizes.mjs [options]
+	console.log(`Usage: node tools/release/scripts/log-bundle-sizes.mjs [options]
 
 Appends bundle-size entries to logs/bundle-sizes/{package-name}.json.
 
@@ -197,7 +197,7 @@ Options:
 Notes:
   - Packages and entry regexes are read from ${defaultConfigPath}.
   - Run package builds before this script.
-  - File patterns match entry files relative to each configured distDir.
+  - Each distDir is relative to the discovered package root; file patterns match within it.
   - When a Vite manifest exists, bytes include the matched entry and its static imports.
   - Log entries contain aggregate numeric byte totals for graphing.
   - Scoped packages use their package name as a nested path, e.g. logs/bundle-sizes/@8f4e/compiler.json.`);
@@ -516,8 +516,13 @@ async function readBundleSizeConfig(configPath) {
 			throw new Error(`${configPath}: ${packageName} must contain an object`);
 		}
 
-		if (typeof packageConfig.distDir !== 'string' || !packageConfig.distDir) {
-			throw new Error(`${configPath}: ${packageName}.distDir must be a string`);
+		if (
+			typeof packageConfig.distDir !== 'string' ||
+			!packageConfig.distDir ||
+			path.isAbsolute(packageConfig.distDir) ||
+			packageConfig.distDir.split(/[\\/]/).includes('..')
+		) {
+			throw new Error(`${configPath}: ${packageName}.distDir must be a package-relative path`);
 		}
 
 		if (!Array.isArray(packageConfig.entries) || packageConfig.entries.length === 0) {

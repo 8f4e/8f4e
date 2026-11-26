@@ -3,7 +3,7 @@
   "packages": {
     "@8f4e/editor-webapp": {
       "label": "Editor Web App",
-      "distDir": "apps/editor-webapp/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",
@@ -13,7 +13,7 @@
     },
     "@8f4e/editor-core": {
       "label": "Editor Core",
-      "distDir": "editor/core/editor-core/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",
@@ -23,21 +23,17 @@
     },
     "@8f4e/editor-state": {
       "label": "Editor State",
-      "distDir": "editor/core/editor-state/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",
           "pattern": "^index\\.js$"
-        },
-        {
-          "name": "testing.js",
-          "pattern": "^testing\\.js$"
         }
       ]
     },
     "@8f4e/compiler": {
       "label": "Compiler",
-      "distDir": "compiler/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",
@@ -47,7 +43,7 @@
     },
     "@8f4e/web-ui": {
       "label": "Web UI",
-      "distDir": "editor/core/web-ui/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",
@@ -57,7 +53,7 @@
     },
     "@8f4e/sprite-generator": {
       "label": "Sprite Generator",
-      "distDir": "editor/core/sprite-generator/dist",
+      "distDir": "dist",
       "entries": [
         {
           "name": "index.js",

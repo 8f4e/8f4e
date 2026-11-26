@@ -21,6 +21,13 @@
 				"cwd": "{projectRoot}"
 			}
 		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [{ "command": "vitest run --config vitest.config.ts", "forwardAllArgs": false }],
+				"cwd": "{projectRoot}"
+			}
+		},
 		"serve": {
 			"executor": "nx:run-commands",
 			"options": {

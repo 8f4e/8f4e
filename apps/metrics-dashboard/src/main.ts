@@ -1,4 +1,10 @@
 import * as Plot from '@observablehq/plot';
+import {
+	type CoverageMeasurementMode,
+	getCoverageMeasurementMode,
+	getPreferredCoverageMode,
+	selectCoverageSeries,
+} from './coverage-series';
 import './styles.css';
 
 type SizeMetric = 'raw' | 'gzip';
@@ -95,6 +101,7 @@ const coverageComponentOrder = [
 	'memoryPlanner',
 	'memoryReferenceResolver',
 	'memoryDefaultResolver',
+	'semanticReferenceResolver',
 	'semanticUtils',
 	'stackAnalyzer',
 	'wasmCodegen',
@@ -110,6 +117,7 @@ const coverageComponentLabels: Record<CoverageComponent, string> = {
 	memoryPlanner: 'Memory Planner',
 	memoryReferenceResolver: 'Memory Reference Resolver',
 	memoryDefaultResolver: 'Memory Default Resolver',
+	semanticReferenceResolver: 'Semantic Reference Resolver',
 	semanticUtils: 'Semantic Utils',
 	stackAnalyzer: 'Stack Analyzer',
 	wasmCodegen: 'Wasm Codegen',
@@ -126,6 +134,7 @@ type CompilerCoverageBucket = {
 
 type CompilerCoverageEntry = {
 	schemaVersion?: number;
+	measurementMode?: string;
 	commit: string;
 	version: string | null;
 	benchmark: string;
@@ -201,6 +210,7 @@ type BytecodePoint = {
 };
 
 type CoveragePoint = {
+	measurementMode: CoverageMeasurementMode;
 	benchmark: string;
 	label: string;
 	component: CoverageComponent;
@@ -286,6 +296,10 @@ app.innerHTML = `
 			<div class="segmented" id="metric-control" role="group" aria-label="Size metric">
 				<button type="button" class="segment is-active" data-metric="gzip">Gzip</button>
 				<button type="button" class="segment" data-metric="raw">Raw</button>
+			</div>
+			<div class="segmented" id="coverage-mode-control" role="group" aria-label="Compiler measurement series" hidden>
+				<button type="button" class="segment" data-coverage-mode="jitless">Deterministic (JIT off)</button>
+				<button type="button" class="segment" data-coverage-mode="legacy">Historical (JIT on)</button>
 			</div>
 		</div>
 	</header>
@@ -381,6 +395,7 @@ app.innerHTML = `
 const state = {
 	tab: 'bundles' as DashboardTab,
 	metric: 'gzip' as SizeMetric,
+	coverageMode: 'legacy' as CoverageMeasurementMode,
 	trackedLogs: [] as TrackedLog[],
 	points: [] as Point[],
 	bytecodeLogs: [] as BytecodeTrackedLog[],
@@ -419,8 +434,10 @@ const growthCaption = requireElement<HTMLSpanElement>('#growth-caption');
 const packageCaption = requireElement<HTMLSpanElement>('#package-caption');
 const packageGrid = requireElement<HTMLDivElement>('#package-grid');
 const metricControl = requireElement<HTMLDivElement>('#metric-control');
+const coverageModeControl = requireElement<HTMLDivElement>('#coverage-mode-control');
 const tabButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-tab]')];
 const metricButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-metric]')];
+const coverageModeButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-coverage-mode]')];
 
 init().catch((error: unknown) => {
 	app.innerHTML = `<div class="error-state"><h1>Metrics Dashboard</h1><p>${escapeHtml(getErrorMessage(error))}</p></div>`;
@@ -437,6 +454,13 @@ async function init() {
 	for (const button of metricButtons) {
 		button.addEventListener('click', () => {
 			state.metric = button.dataset.metric as SizeMetric;
+			render();
+		});
+	}
+
+	for (const button of coverageModeButtons) {
+		button.addEventListener('click', () => {
+			state.coverageMode = button.dataset.coverageMode as CoverageMeasurementMode;
 			render();
 		});
 	}
@@ -465,6 +489,7 @@ async function init() {
 	state.points = points;
 	state.bytecodePoints = bytecodePoints;
 	state.coveragePoints = coveragePoints;
+	state.coverageMode = getPreferredCoverageMode(coveragePoints);
 	state.tsdocPoints = tsdocPoints;
 	state.testPoints = testPoints;
 	render();
@@ -589,7 +614,7 @@ async function loadCoveragePoints(trackedLogs: BytecodeTrackedLog[]) {
 		})
 	);
 
-	return withSequentialReleaseIndexes(pointGroups.flat());
+	return pointGroups.flat();
 }
 
 async function loadTsdocPoints(trackedLogs: TrackedLog[]) {
@@ -690,6 +715,7 @@ function toCoveragePoints(log: BytecodeTrackedLog, entries: CompilerCoverageEntr
 				return [];
 			}
 			return {
+				measurementMode: getCoverageMeasurementMode(entry),
 				benchmark: log.benchmark,
 				label: log.label,
 				component,
@@ -858,6 +884,7 @@ function render() {
 	testsView.hidden = state.tab !== 'tests';
 	rangesView.hidden = !isCoverageDashboardTab(state.tab);
 	metricControl.hidden = state.tab !== 'bundles';
+	coverageModeControl.hidden = !isCoverageDashboardTab(state.tab);
 
 	for (const button of tabButtons) {
 		button.classList.toggle('is-active', button.dataset.tab === state.tab);
@@ -865,6 +892,11 @@ function render() {
 
 	for (const button of metricButtons) {
 		button.classList.toggle('is-active', button.dataset.metric === state.metric);
+	}
+	for (const button of coverageModeButtons) {
+		const active = button.dataset.coverageMode === state.coverageMode;
+		button.classList.toggle('is-active', active);
+		button.setAttribute('aria-pressed', String(active));
 	}
 
 	if (state.tab === 'bytecode') {
@@ -995,17 +1027,19 @@ function renderTests() {
 }
 
 function renderCoverage(config: CoverageMetricConfig) {
-	const summaryPoints = toCoverageSummaryPoints(state.coveragePoints, config.metric);
+	const coveragePoints = withSequentialReleaseIndexes(selectCoverageSeries(state.coveragePoints, state.coverageMode));
+	const summaryPoints = toCoverageSummaryPoints(coveragePoints, config.metric);
 	const latestReleasePoints = getLatestCoverageReleasePoints(summaryPoints);
 	const latestPoint = latestReleasePoints[0] ?? null;
 	const latestPipelinePoint = latestReleasePoints.find(point => point.component === 'compilerPipeline') ?? null;
 	const latestCompilerPoint = latestReleasePoints.find(point => point.component === 'compiler') ?? null;
 	const latestTokenizerPoint = latestReleasePoints.find(point => point.component === 'tokenizer') ?? null;
-	const snapshotCount = new Set(state.coveragePoints.map(point => point.releaseKey)).size;
+	const snapshotCount = new Set(coveragePoints.map(point => point.releaseKey)).size;
+	const seriesLabel = state.coverageMode === 'jitless' ? 'Deterministic (JIT off)' : 'Historical (JIT on)';
 
 	lastUpdated.textContent = latestPoint
-		? `Latest compiler ${latestPoint.releaseTag} · ${shortCommit(latestPoint.commit)}`
-		: `No ${config.emptyLabel}`;
+		? `${seriesLabel} · Latest compiler ${latestPoint.releaseTag} · ${shortCommit(latestPoint.commit)}`
+		: `${seriesLabel} · No ${config.emptyLabel}`;
 	coverageOverviewCaption.textContent = config.axisLabel;
 	coverageBenchmarkCaption.textContent = `${config.axisLabel} by benchmark`;
 
@@ -1029,7 +1063,7 @@ function renderCoverage(config: CoverageMetricConfig) {
 	].join('');
 
 	renderCoverageOverview(summaryPoints, config);
-	renderCoverageGrid(state.coveragePoints, config);
+	renderCoverageGrid(coveragePoints, config);
 }
 
 function renderSummaryItem(label: string, value: string, meta: string) {
