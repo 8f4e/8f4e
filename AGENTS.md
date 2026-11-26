@@ -10,6 +10,9 @@
   gallery. Keep full gallery catalogs out of the homepage build. Ship project sources as assets.
 - [Examples](examples) ships project and module source. Consumers that discover these files depend on
   `@8f4e/examples` so generators and source changes participate in Nx builds and watches.
+- [Example integration tests](examples/tests/README.md) own cross-package example regressions and depend on the CLI,
+  compiler and source packages without pulling those consumers into the examples asset build. [Compiler benchmarks](tools/compiler-benchmarks/README.md)
+  owns benchmark cases and measurement runners; keep both validation projects out of Nx releases.
 - [Vite source collections](tools/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
   selection and interpretation belong to consumers.
 - [Linux runtime](apps/runtime-linux/AGENTS.md) owns native JACK playback. The separate

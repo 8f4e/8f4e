@@ -1,0 +1,23 @@
+{
+	"name": "@8f4e/examples-integration",
+	"projectType": "library",
+	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["^build"],
+			"options": {
+				"commands": [{ "command": "vitest run --config vitest.config.ts", "forwardAllArgs": false }],
+				"cwd": "{projectRoot}"
+			}
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"options": { "command": "tsc --noEmit", "cwd": "{projectRoot}" }
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": { "command": "biome check --write .", "cwd": "{projectRoot}" }
+		}
+	},
+	"tags": ["type:integration-test", "scope:examples"]
+}

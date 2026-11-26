@@ -22,11 +22,11 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/examples"],
+					"projects": ["@8f4e/compiler-benchmarks"],
 					"target": "log-bytecode-size"
 				},
 				{
-					"projects": ["@8f4e/examples"],
+					"projects": ["@8f4e/compiler-benchmarks"],
 					"target": "log-compiler-coverage-counts"
 				},
 				{

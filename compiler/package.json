@@ -11,6 +11,7 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./package.json": "./package.json",
     "./docs": "./docs",
     "./docs/*.md": "./docs/*.md",
     "./test-fixtures": "./tests",

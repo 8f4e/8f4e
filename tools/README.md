@@ -11,6 +11,7 @@ Shared workspace infrastructure and standalone development utilities live here, 
 
 ## Development utilities
 
+- [compiler-benchmarks](compiler-benchmarks/README.md): measure compiler bytecode size and execution counts for benchmark programs.
 - [dx7-to-8f4e](dx7-to-8f4e/README.md): convert DX7 SysEx patches into movable 8f4e constants blocks.
 - [project-preview](project-preview/README.md): generate project preview images with the editor renderer.
 - [Release tooling](../docs/releasing.md): prepare and validate repository releases.

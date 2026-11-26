@@ -4,20 +4,21 @@ import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
 const workspaceRoot = process.cwd();
-const benchmarkDir = path.resolve(workspaceRoot, 'examples/src/benchmarks/bytecode-size');
+const benchmarkDir = fileURLToPath(new URL('../cases/', import.meta.url));
 const outputDir = path.resolve(workspaceRoot, 'logs/bytecode-size');
-const cliPath = path.resolve(workspaceRoot, 'apps/cli/bin/cli.js');
+const cliPath = fileURLToPath(import.meta.resolve('@8f4e/cli/cli'));
 const suiteName = 'bytecode-size';
 
 async function main() {
 	const benchmarkCases = await collectBenchmarkCases(benchmarkDir);
 	const gitMetadata = getGitMetadata();
-	const packageJson = await readJson(path.resolve(workspaceRoot, 'compiler/package.json'));
+	const packageJson = await readJson(new URL(import.meta.resolve('@8f4e/compiler/package.json')));
 
 	if (benchmarkCases.length === 0) {
 		console.error(`No bytecode-size benchmark cases matched in ${path.relative(workspaceRoot, benchmarkDir)}`);

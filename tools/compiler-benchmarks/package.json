@@ -1,0 +1,15 @@
+{
+	"name": "@8f4e/compiler-benchmarks",
+	"private": true,
+	"type": "module",
+	"description": "Compiler benchmark sources and measurement runners",
+	"exports": {
+		"./cases": "./cases",
+		"./cases/*.8f4e": "./cases/*.8f4e"
+	},
+	"devDependencies": {
+		"@8f4e/cli": "*",
+		"@8f4e/compiler": "*",
+		"@8f4e/stdlib": "*"
+	}
+}

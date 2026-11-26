@@ -4,6 +4,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig(
 	createNodePreset({
 		root: __dirname,
-		typecheckTsconfig: './tsconfig.typecheck.json',
+		typecheckTsconfig: './tsconfig.json',
 	})
 );

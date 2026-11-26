@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = process.cwd();
-const benchmarkDir = path.resolve(workspaceRoot, 'examples/src/benchmarks/bytecode-size');
+const benchmarkDir = fileURLToPath(new URL('../cases/', import.meta.url));
 const outputDir = path.resolve(workspaceRoot, 'logs/compiler-coverage-counts');
 const suiteName = 'compiler-coverage-counts';
 const schemaVersion = 2;
@@ -86,7 +86,7 @@ await main();
 async function main() {
 	const benchmarkCases = await collectBenchmarkCases(benchmarkDir);
 	const gitMetadata = getGitMetadata();
-	const packageJson = await readJson(path.resolve(workspaceRoot, 'compiler/package.json'));
+	const packageJson = await readJson(new URL(import.meta.resolve('@8f4e/compiler/package.json')));
 
 	if (benchmarkCases.length === 0) {
 		console.error(`No compiler coverage benchmark cases matched in ${path.relative(workspaceRoot, benchmarkDir)}`);

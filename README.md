@@ -127,7 +127,9 @@ The 8f4e project is organized as an Nx monorepo with the following project hiera
 │           └── packages/
 │               └── <a href="./editor/plugins/worker-runtime/packages/runtime-web-worker/README.md">runtime-web-worker</a> (Web Worker execution loop and message protocol)
 ├── <a href="./examples/README.md">examples</a> (Example modules and projects)
+│   └── <a href="./examples/tests/README.md">tests</a> (Independent example integration suite)
 ├── tools/
+│   ├── <a href="./tools/compiler-benchmarks/README.md">compiler-benchmarks</a> (Compiler benchmark cases and measurement runners)
 │   ├── <a href="./tools/config/README.md">config</a> (Shared tooling and configuration helpers for the workspace)
 │   ├── <a href="./tools/dx7-to-8f4e/README.md">dx7-to-8f4e</a> (DX7 SysEx patch converter)
 │   ├── <a href="./tools/project-preview/README.md">project-preview</a> (Project preview image generator)

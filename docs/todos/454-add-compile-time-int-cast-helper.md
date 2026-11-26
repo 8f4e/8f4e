@@ -103,7 +103,7 @@ loop int(SAMPLE_RATE/60)
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test`
-- `npx nx run @8f4e/examples:test`
+- `npx nx run @8f4e/examples-integration:test`
 - Compile a small example containing `float[] buffer int(113*48000/32000)`.
 
 ## Success Criteria

@@ -11,7 +11,8 @@
 				"{projectRoot}/src/modules/lookup-tables/midiFreqLUT_12TET.8f4em",
 				"{projectRoot}/src/modules/constants/amigaPeriodIncrement.8f4em"
 			],
-			"dependsOn": ["^build"],
+			"dependsOn": [],
+			"inputs": ["production"],
 			"options": {
 				"command": "node ./src/module-generators/generateModules.ts",
 				"cwd": "{projectRoot}"
@@ -29,31 +30,7 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write src tests vitest.config.ts",
-				"cwd": "{projectRoot}"
-			}
-		},
-		"test": {
-			"executor": "nx:run-commands",
-			"dependsOn": [
-				"^build",
-				{
-					"projects": ["@8f4e/cli"],
-					"target": "test",
-					"params": "ignore"
-				}
-			],
-			"options": {
-				"commands": [
-					{
-						"command": "node ../apps/cli/bin/cli.js test \"src/modules/**/*.8f4em\"",
-						"forwardAllArgs": false
-					},
-					{
-						"command": "vitest run --config vitest.config.ts",
-						"forwardAllArgs": false
-					}
-				],
+				"command": "biome check --write src",
 				"cwd": "{projectRoot}"
 			}
 		},
@@ -64,42 +41,10 @@
 				"cwd": "{projectRoot}"
 			}
 		},
-		"log-bytecode-size": {
-			"executor": "nx:run-commands",
-			"cache": false,
-			"outputs": ["{workspaceRoot}/logs/bytecode-size"],
-			"dependsOn": [
-				{
-					"projects": ["@8f4e/cli"],
-					"target": "build",
-					"params": "ignore"
-				}
-			],
-			"options": {
-				"command": "node scripts/log-bytecode-sizes.mjs",
-				"cwd": "{workspaceRoot}"
-			}
-		},
-		"log-compiler-coverage-counts": {
-			"executor": "nx:run-commands",
-			"cache": false,
-			"outputs": ["{workspaceRoot}/logs/compiler-coverage-counts"],
-			"dependsOn": [
-				{
-					"projects": ["@8f4e/compiler"],
-					"target": "build",
-					"params": "ignore"
-				}
-			],
-			"options": {
-				"command": "node scripts/log-compiler-coverage-counts.mjs",
-				"cwd": "{workspaceRoot}"
-			}
-		},
 		"typecheck": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "tsc --project tsconfig.typecheck.json --noEmit",
+				"command": "tsc --noEmit",
 				"cwd": "{projectRoot}"
 			},
 			"dependsOn": ["^build"]

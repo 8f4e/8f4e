@@ -54,6 +54,8 @@
     "editor/plugins/*/packages/*",
     "editor/editor-webmcp",
     "examples",
+    "examples/tests",
+    "tools/compiler-benchmarks",
     "tools/config",
     "tools/test-runner",
     "tools/vite-plugin-sources",

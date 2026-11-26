@@ -1,14 +1,16 @@
-import { glob, readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { glob } from 'node:fs/promises';
+import { sep } from 'node:path';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
+import { collectionRoot, type ProgramSourceId, readProgramSource, resolveStdlibInclude } from './programSources';
 
-const examplesRoot = new URL('../../../examples/src/', import.meta.url);
-const projects: Array<{ file: string; source: string }> = [];
-for await (const file of glob('**/*.{8f4e,8f4em}', { cwd: fileURLToPath(examplesRoot) })) {
-	const source = await readFile(new URL(file, examplesRoot), 'utf8');
-	if (/^(?:int(?:8u?|16u?)?|float(?:64)?)&\s/m.test(source)) projects.push({ file, source });
+const projects: Array<{ file: ProgramSourceId; source: string }> = [];
+for (const collection of ['projects', 'modules', 'benchmarks'] as const) {
+	for await (const path of glob('**/*.{8f4e,8f4em}', { cwd: collectionRoot(collection) })) {
+		const file: ProgramSourceId = `${collection}/${path.split(sep).join('/')}`;
+		const source = await readProgramSource(file);
+		if (/^(?:int(?:8u?|16u?)?|float(?:64)?)&\s/m.test(source)) projects.push({ file, source });
+	}
 }
 projects.sort((a, b) => a.file.localeCompare(b.file));
 

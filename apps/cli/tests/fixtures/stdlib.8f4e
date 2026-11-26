@@ -1,0 +1,21 @@
+8f4e/v1
+
+includes
+include std/math/fract
+includesEnd
+
+entry test
+module stdlibAssertions
+push 0.0
+call fract
+assertEqual 0.0
+
+push 3.25
+call fract
+assertEqual 0.25
+
+push 10.75
+call fract
+assertEqual 0.75
+moduleEnd
+entryEnd
