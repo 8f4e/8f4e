@@ -11,10 +11,21 @@ const args = process.argv.slice(2);
 const outputDir = path.resolve(workspaceRoot, getOptionValues(args, '--out-dir').at(-1) ?? 'logs/test-coverage');
 const suiteName = 'test-coverage';
 
-const ignoredDirectories = new Set(['.tmp', 'coverage', 'dist', 'node_modules']);
+const ignoredDirectories = new Set([
+	'.tmp',
+	'coverage',
+	'dist',
+	'node_modules',
+	'__tests__',
+	'__snapshots__',
+	'__screenshots__',
+	'generated',
+]);
 const ignoredPackages = new Set(['glugglugglug']);
-const excludedSourceFilePatterns = [/\.d\.ts$/, /\.test\.ts$/, /\.spec\.ts$/];
+const sourceExtension = /\.(?:[cm]?[jt]s|[jt]sx)$/;
+const excludedSourceFile = /\.(?:test|spec|d)\.(?:[cm]?[jt]s|[jt]sx)$/;
 const coverageMetrics = ['statements', 'branches', 'functions', 'lines'];
+const measurementScope = 'production-source';
 
 await main();
 
@@ -23,49 +34,58 @@ async function main() {
 	const packageEntries = projects.filter(project => !ignoredPackages.has(project.name));
 	const commit = getGitCommit();
 	const recordedAt = new Date().toISOString();
-	const loggedEntries = [];
+	const measurements = [];
 	const skippedEntries = [];
+	const missingReports = [];
 	let loggedCoverageSummaryCount = 0;
 
 	for (const packageEntry of packageEntries) {
-		const coverageSummaryPath = await findCoverageSummaryPath(packageEntry);
-
-		if (!coverageSummaryPath) {
+		if (!packageEntry.expectsCoverage) {
 			if (
 				!packageEntry.hasTestTarget &&
 				packageEntry.sourceRoot &&
-				!(await hasMeasuredTypeScriptFiles(packageEntry.sourceRoot))
+				!(await hasMeasuredSourceFiles(packageEntry.sourceRoot))
 			) {
-				const coverage = createEmptyCoverageResult();
-				const logEntry = {
-					commit,
-					recordedAt,
-					coverage,
-				};
-				const outputPath = getPackageLogPath(packageEntry);
-
-				await appendLogEntry(outputPath, logEntry);
-				loggedEntries.push({
-					...logEntry,
-					packageName: packageEntry.name,
-					outputPath,
-				});
+				measurements.push({ packageEntry, coverage: createEmptyCoverageResult() });
 				continue;
 			}
 
 			skippedEntries.push({
 				...packageEntry,
-				reason: 'no coverage summary',
+				reason: 'no coverage-producing test target',
 			});
 			continue;
 		}
 
-		const summary = await readJson(coverageSummaryPath);
-		const coverage = toCoverageResult(summary.total);
+		const coverageSummaryPath = path.join(packageEntry.root, 'coverage', 'coverage-summary.json');
+		let summary;
+		try {
+			summary = await readJson(coverageSummaryPath);
+		} catch (error) {
+			if (error.code !== 'ENOENT') throw error;
+			missingReports.push(`${packageEntry.name}: ${toWorkspacePath(coverageSummaryPath)}`);
+			continue;
+		}
+		measurements.push({ packageEntry, coverage: toCoverageResult(summary.total) });
 		loggedCoverageSummaryCount += 1;
+	}
+
+	// Validate every expected report before writing any history entries.
+	if (missingReports.length > 0) {
+		throw new Error(
+			`Missing expected coverage reports. Run tests with --coverage before logging.\n${missingReports.join('\n')}`
+		);
+	}
+	if (loggedCoverageSummaryCount === 0) {
+		throw new Error('No test coverage summaries were found. Run tests with --coverage before logging.');
+	}
+
+	const loggedEntries = [];
+	for (const { packageEntry, coverage } of measurements) {
 		const logEntry = {
 			commit,
 			recordedAt,
+			measurementScope,
 			coverage,
 		};
 		const outputPath = getPackageLogPath(packageEntry);
@@ -78,43 +98,21 @@ async function main() {
 		});
 	}
 
-	if (loggedCoverageSummaryCount === 0) {
-		console.error('No test coverage summaries were found. Run tests with --coverage before logging.');
-		process.exit(1);
-	}
-
 	printResults(loggedEntries, skippedEntries);
 }
 
-async function findCoverageSummaryPath(packageEntry) {
-	const packageNameCoveragePath = path.join(workspaceRoot, 'coverage', packageEntry.name, 'coverage-summary.json');
-	const workspaceCoveragePath = path.join(
-		workspaceRoot,
-		'coverage',
-		packageEntry.relativeRoot,
-		'coverage-summary.json'
-	);
-	const packageCoveragePath = path.join(packageEntry.root, 'coverage', 'coverage-summary.json');
-
-	if (await pathExists(packageNameCoveragePath)) {
-		return packageNameCoveragePath;
-	}
-
-	if (await pathExists(workspaceCoveragePath)) {
-		return workspaceCoveragePath;
-	}
-
-	return (await pathExists(packageCoveragePath)) ? packageCoveragePath : null;
-}
-
-async function hasMeasuredTypeScriptFiles(root) {
+async function hasMeasuredSourceFiles(root, sourceRoot = root) {
 	const entries = await fs.readdir(root, { withFileTypes: true });
 
 	for (const entry of entries) {
 		const entryPath = path.join(root, entry.name);
 
 		if (entry.isDirectory()) {
-			if (!ignoredDirectories.has(entry.name) && (await hasMeasuredTypeScriptFiles(entryPath))) {
+			if (
+				!ignoredDirectories.has(entry.name) &&
+				entryPath !== path.join(sourceRoot, 'fixtures') &&
+				(await hasMeasuredSourceFiles(entryPath, sourceRoot))
+			) {
 				return true;
 			}
 
@@ -130,7 +128,7 @@ async function hasMeasuredTypeScriptFiles(root) {
 }
 
 function shouldMeasureSourceFile(filePath) {
-	return filePath.endsWith('.ts') && !excludedSourceFilePatterns.some(pattern => pattern.test(filePath));
+	return sourceExtension.test(filePath) && !excludedSourceFile.test(filePath);
 }
 
 function toCoverageResult(total) {

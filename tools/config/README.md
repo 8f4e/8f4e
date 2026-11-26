@@ -55,6 +55,12 @@ Available presets:
 - `createJsdomPreset()` - For packages that need DOM APIs in tests
 - `createPreset()` - Generic preset with full customization
 
+Coverage includes authored production JavaScript and TypeScript files under the package's `src/`, even if no test imports
+them. Declaration files, test files, test helper directories, snapshot directories, generated source directories and
+`src/fixtures/` are excluded.
+Reports use the package-local `coverage/` directory, which is the shared Nx test output. Run `nx test <project> --coverage`
+to generate the reports.
+
 ### Vite Configuration
 
 ```ts

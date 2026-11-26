@@ -22,7 +22,6 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
-			"outputs": ["{projectRoot}/coverage"],
 			"options": {
 				"command": "vitest run --config vitest.config.ts",
 				"cwd": "{projectRoot}"

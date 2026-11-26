@@ -27,10 +27,8 @@
 		},
 		"test": {
 			"executor": "@nx/vitest:test",
-			"outputs": ["{workspaceRoot}/coverage/@8f4e/wasm-ir-lowering"],
 			"options": {
-				"config": "{projectRoot}/vitest.config.ts",
-				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/wasm-ir-lowering"
+				"config": "{projectRoot}/vitest.config.ts"
 			}
 		},
 		"typecheck": {

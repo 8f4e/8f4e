@@ -15,6 +15,7 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
+			"outputs": [],
 			"cache": false,
 			"dependsOn": [
 				{ "projects": ["@8f4e/cli"], "target": "build", "params": "ignore" },

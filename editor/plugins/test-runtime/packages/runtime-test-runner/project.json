@@ -31,12 +31,8 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/@8f4e/runtime-test-runner"
-      ],
       "options": {
-        "config": "{projectRoot}/vitest.config.ts",
-        "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/runtime-test-runner"
+        "config": "{projectRoot}/vitest.config.ts"
       }
     },
     "typecheck": {

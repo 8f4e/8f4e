@@ -16,6 +16,8 @@ Each report in `src/reports/` owns its markup, log-to-point mapping, summary, ta
 dashboard shell, view selection and controls. Shared manifest loading, release indexing, chart helpers, card markup and
 formatting live in `src/shared/`. The compiler-coverage report retains separate historical and deterministic series;
 when multiple Node/V8 runtimes have been recorded, select the runtime to compare only like-for-like measurements.
+The test-coverage report similarly separates historic measurements from the newer production-source scope rather than
+connecting incomparable coverage percentages across the change in methodology.
 
 The Vite configuration exposes the same log manifests and JSON files in development and in the production bundle.
 Release targets and measurement runners live in [release tooling](../../tools/release/README.md) and

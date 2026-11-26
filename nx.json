@@ -40,6 +40,9 @@
       "dependsOn": [
         "^build"
       ],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
       "inputs": [
         "default",
         "^production"

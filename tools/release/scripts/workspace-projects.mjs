@@ -8,9 +8,9 @@ import { createProjectGraphAsync } from '@nx/devkit';
  * @property {string} projectName Nx project name used for release tags.
  * @property {string | null} version Package version, if the project is versioned.
  * @property {string} root Absolute project directory.
- * @property {string} relativeRoot Workspace-relative project directory.
  * @property {string | null} sourceRoot Absolute source directory, or null for source-less projects.
  * @property {boolean} hasTestTarget Whether Nx exposes a test target for the project.
+ * @property {boolean} expectsCoverage Whether the test target publishes package-local coverage.
  */
 
 /**
@@ -52,9 +52,9 @@ export async function projectsFromGraph(workspaceRoot, graph, packageRoots = [])
 			projectName: node.name,
 			version: metadata.packageVersion ?? null,
 			root,
-			relativeRoot: node.data.root,
 			sourceRoot: await resolveProjectSourceRoot(root, node.data.metadata?.metrics?.sourceDirectory ?? 'src'),
 			hasTestTarget: Boolean(node.data.targets?.test),
+			expectsCoverage: node.data.targets?.test?.outputs?.includes('{projectRoot}/coverage') ?? false,
 		});
 	}
 	for (const [index, selected] of selectedRoots.entries()) {

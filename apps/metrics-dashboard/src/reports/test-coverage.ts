@@ -12,6 +12,12 @@ import { escapeHtml, renderReportCards, renderSummaryItem, requireElement } from
 import { formatCount, formatDateTime, formatPercent } from '../shared/format';
 
 type TestCoverageMetric = 'statements' | 'branches' | 'functions' | 'lines';
+type TestCoverageScope = 'Historical scope' | 'Production source';
+
+const scopeColors = {
+	domain: ['Historical scope', 'Production source'],
+	range: ['#1d4ed8', '#0f766e'],
+};
 
 type TestCoverageBucket = {
 	covered: number;
@@ -22,6 +28,7 @@ type TestCoverageBucket = {
 type TestCoverageEntry = {
 	commit: string;
 	recordedAt: string;
+	measurementScope?: string;
 	coverage: Record<TestCoverageMetric, TestCoverageBucket>;
 };
 
@@ -30,6 +37,7 @@ type TestCoveragePoint = {
 	label: string;
 	recordedAt: Date;
 	commit: string;
+	scope: TestCoverageScope;
 	releaseKey: string;
 	releaseIndex: number;
 	releaseLabel: string;
@@ -38,6 +46,7 @@ type TestCoveragePoint = {
 
 type TestCoverageSummaryPoint = {
 	commit: string;
+	scope: TestCoverageScope;
 	releaseKey: string;
 	releaseIndex: number;
 	releaseLabel: string;
@@ -52,7 +61,7 @@ export const testsMarkup = `
 	<section class="chart-section">
 		<div class="section-heading">
 			<h2>Coverage</h2>
-			<span>Line coverage percentage</span>
+			<span>Line coverage percentage · separate measurement scopes</span>
 		</div>
 		<div class="chart" id="tests-overview-chart"></div>
 	</section>
@@ -85,7 +94,7 @@ export function createTestReport(lastUpdated: HTMLParagraphElement) {
 			const snapshotCount = new Set(data.points.map(point => point.releaseKey)).size;
 
 			lastUpdated.textContent = latestPoint
-				? `Latest test coverage ${latestPoint.releaseLabel} · ${formatDateTime(latestPoint.recordedAt)}`
+				? `Latest test coverage ${latestPoint.releaseLabel} · ${latestPoint.scope} · ${formatDateTime(latestPoint.recordedAt)}`
 				: 'No test coverage data';
 
 			summaryGrid.innerHTML = [
@@ -95,7 +104,7 @@ export function createTestReport(lastUpdated: HTMLParagraphElement) {
 					latestCoverage ? `${formatCount(latestCoverage.covered)} / ${formatCount(latestCoverage.total)} covered` : ''
 				),
 				renderSummaryItem('Packages', String(latestReleasePoints.length), 'tracked packages'),
-				renderSummaryItem('Snapshots', String(snapshotCount), 'recorded commits'),
+				renderSummaryItem('Snapshots', String(snapshotCount), 'recorded measurements'),
 			].join('');
 
 			renderTestOverview(overviewChart, data.points);
@@ -115,17 +124,23 @@ export function createTestReport(lastUpdated: HTMLParagraphElement) {
 	};
 }
 
-function toTestPoints(log: PackageLog, entries: TestCoverageEntry[]) {
-	return entries.map(entry => ({
-		packageName: log.packageName,
-		label: log.label,
-		recordedAt: new Date(entry.recordedAt),
-		commit: entry.commit,
-		releaseKey: entry.commit || entry.recordedAt,
-		releaseIndex: 0,
-		releaseLabel: '',
-		coverage: entry.coverage,
-	}));
+/** Keep legacy and full-source snapshots separate even if they refer to the same commit. */
+export function toTestPoints(log: PackageLog, entries: TestCoverageEntry[]): TestCoveragePoint[] {
+	return entries.map(entry => {
+		const scope: TestCoverageScope =
+			entry.measurementScope === 'production-source' ? 'Production source' : 'Historical scope';
+		return {
+			packageName: log.packageName,
+			label: log.label,
+			recordedAt: new Date(entry.recordedAt),
+			commit: entry.commit,
+			scope,
+			releaseKey: `${entry.commit || entry.recordedAt}|${scope}`,
+			releaseIndex: 0,
+			releaseLabel: '',
+			coverage: entry.coverage,
+		};
+	});
 }
 
 function renderTestOverview(overviewChart: HTMLElement, points: TestCoveragePoint[]) {
@@ -142,6 +157,7 @@ function renderTestOverview(overviewChart: HTMLElement, points: TestCoveragePoin
 			marginRight: 24,
 			marginTop: 18,
 			marginBottom: 44,
+			color: { ...scopeColors, legend: new Set(summaryPoints.map(point => point.scope)).size > 1 },
 			x: {
 				label: null,
 				grid: true,
@@ -159,7 +175,8 @@ function renderTestOverview(overviewChart: HTMLElement, points: TestCoveragePoin
 							Plot.lineY(summaryPoints, {
 								x: 'releaseIndex',
 								y: 'percentage',
-								stroke: '#1d4ed8',
+								stroke: 'scope',
+								z: 'scope',
 								strokeWidth: 2.25,
 								tip: true,
 							}),
@@ -168,10 +185,10 @@ function renderTestOverview(overviewChart: HTMLElement, points: TestCoveragePoin
 				Plot.dot(summaryPoints, {
 					x: 'releaseIndex',
 					y: 'percentage',
-					fill: '#1d4ed8',
+					fill: 'scope',
 					r: 4,
 					title: point =>
-						`${point.releaseLabel}\n${formatPercent(point.percentage)}\n${formatCount(point.covered)} / ${formatCount(point.total)} lines covered`,
+						`${point.releaseLabel}\n${point.scope}\n${formatPercent(point.percentage)}\n${formatCount(point.covered)} / ${formatCount(point.total)} lines covered`,
 				}),
 			],
 		})
@@ -189,6 +206,7 @@ function createTestPackageChart(container: HTMLElement, points: TestCoveragePoin
 		marginRight: 16,
 		marginTop: 12,
 		marginBottom: 36,
+		color: scopeColors,
 		x: {
 			label: null,
 			grid: true,
@@ -206,7 +224,8 @@ function createTestPackageChart(container: HTMLElement, points: TestCoveragePoin
 						Plot.lineY(points, {
 							x: 'releaseIndex',
 							y: point => point.coverage.lines.percentage,
-							stroke: '#1d4ed8',
+							stroke: 'scope',
+							z: 'scope',
 							strokeWidth: 2,
 						}),
 					]
@@ -214,10 +233,10 @@ function createTestPackageChart(container: HTMLElement, points: TestCoveragePoin
 			Plot.dot(points, {
 				x: 'releaseIndex',
 				y: point => point.coverage.lines.percentage,
-				fill: '#1d4ed8',
+				fill: 'scope',
 				r: 4,
 				title: point =>
-					`${point.releaseLabel}\n${formatPercent(point.coverage.lines.percentage)}\n${formatCount(point.coverage.lines.covered)} / ${formatCount(point.coverage.lines.total)} lines covered`,
+					`${point.releaseLabel}\n${point.scope}\n${formatPercent(point.coverage.lines.percentage)}\n${formatCount(point.coverage.lines.covered)} / ${formatCount(point.coverage.lines.total)} lines covered`,
 			}),
 		],
 	});
@@ -234,6 +253,7 @@ function renderTestTable(points: TestCoveragePoint[]) {
 				<thead>
 					<tr>
 						<th>Snapshot</th>
+						<th>Scope</th>
 						<th>Lines</th>
 						<th>Branches</th>
 						<th>Functions</th>
@@ -247,6 +267,7 @@ function renderTestTable(points: TestCoveragePoint[]) {
 							point => `
 								<tr>
 									<td>${escapeHtml(point.releaseLabel)}</td>
+									<td>${point.scope}</td>
 									<td>${formatPercent(point.coverage.lines.percentage)}</td>
 									<td>${formatPercent(point.coverage.branches.percentage)}</td>
 									<td>${formatPercent(point.coverage.functions.percentage)}</td>
@@ -260,7 +281,10 @@ function renderTestTable(points: TestCoveragePoint[]) {
 	`;
 }
 
-function toTestSummaryPoints(points: TestCoveragePoint[], metric: TestCoverageMetric): TestCoverageSummaryPoint[] {
+export function toTestSummaryPoints(
+	points: TestCoveragePoint[],
+	metric: TestCoverageMetric
+): TestCoverageSummaryPoint[] {
 	const byRelease = new Map<string, TestCoverageSummaryPoint>();
 
 	for (const point of points) {
@@ -276,6 +300,7 @@ function toTestSummaryPoints(points: TestCoveragePoint[], metric: TestCoverageMe
 
 		byRelease.set(point.releaseKey, {
 			commit: point.commit,
+			scope: point.scope,
 			releaseKey: point.releaseKey,
 			releaseIndex: point.releaseIndex,
 			releaseLabel: point.releaseLabel,
@@ -304,5 +329,5 @@ function summarizeTestCoverage(points: TestCoveragePoint[], metric: TestCoverage
 }
 
 function formatTestPointMeta(point: TestCoveragePoint) {
-	return `${point.releaseLabel} · ${formatCount(point.coverage.lines.covered)} / ${formatCount(point.coverage.lines.total)} lines`;
+	return `${point.releaseLabel} · ${point.scope} · ${formatCount(point.coverage.lines.covered)} / ${formatCount(point.coverage.lines.total)} lines`;
 }

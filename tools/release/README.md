@@ -25,4 +25,13 @@ For local TSDoc and test-coverage measurements, the runners accept repeated `--p
 filters for Nx package projects under those directories and `--out-dir <directory>` to write isolated results.
 A directory filter that matches no Nx package projects is an error rather than an empty measurement.
 
+Test coverage uses only each package's `coverage/coverage-summary.json`, as declared by its Nx test outputs. After
+running `nx test <project> --coverage` (or `@8f4e/release:tests` for all release tests), metrics collection fails before
+appending any records if an expected report is missing. Integration-only, native and other non-coverage tests opt out
+with empty test outputs. Packages without tests that ship executable sources are not counted as measured packages.
+New test-coverage records identify their `production-source` measurement scope, since the shared preset now includes
+untested authored production files and excludes test helpers and generated data. Older records are retained but are
+not directly comparable. These are Vitest process measurements; execution in separate subprocesses, such as CLI
+integration tests that launch the built command, is not included.
+
 For actual releases and deployment, follow the [release instructions](../../docs/releasing.md).

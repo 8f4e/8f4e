@@ -4,6 +4,7 @@
 	"targets": {
 		"test": {
 			"executor": "nx:run-commands",
+			"outputs": [],
 			"options": {
 				"commands": [{ "command": "node --test tests/*.test.mjs", "forwardAllArgs": false }],
 				"cwd": "{projectRoot}"

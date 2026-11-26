@@ -27,10 +27,8 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/@8f4e/sub-program"],
       "options": {
-        "config": "{projectRoot}/vitest.config.ts",
-        "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/sub-program"
+        "config": "{projectRoot}/vitest.config.ts"
       }
     },
     "typecheck": {
