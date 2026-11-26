@@ -83,7 +83,8 @@ jobs:
       - name: Check command tool formatting
         run: |
           npx nx run @8f4e/runtime-command:lint
-          git diff HEAD --exit-code --ignore-submodules=none
+          # The checkout action trusts the mounted repository only in its temporary Git configuration.
+          git -c safe.directory="$GITHUB_WORKSPACE" -C "$GITHUB_WORKSPACE" diff HEAD --exit-code --ignore-submodules=none
 
       - name: Build native runtime
         run: npx nx run @8f4e/runtime-linux:build
