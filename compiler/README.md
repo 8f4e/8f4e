@@ -74,6 +74,7 @@ more detail.
 Tooling can resolve the exported `@8f4e/compiler/docs` and `@8f4e/compiler/test-fixtures` collection directories
 through `import.meta.resolve`. Individual Markdown files and `*.test.8f4e` fixtures are also available by package
 subpath, for example `@8f4e/compiler/docs/instructions/stack.md`.
+The benchmark runner resolves `@8f4e/compiler/package.json` to label measurements with the compiler version.
 
 ## Compilation boundaries
 

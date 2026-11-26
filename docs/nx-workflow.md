@@ -81,6 +81,8 @@ workspaces by their package names; native applications without npm manifests dec
 - `@8f4e/sprite-generator` (`editor/core/sprite-generator`)
 - `@8f4e/compiler` (`compiler/`)
 - `@8f4e/examples` (`examples/`)
+- `@8f4e/examples-integration` (`examples/tests/`, test only)
+- `@8f4e/compiler-benchmarks` (`tools/compiler-benchmarks`, metrics tooling)
 - `@8f4e/config` (`tools/config`)
 - `@8f4e/test-runner` (`tools/test-runner`)
 - `@8f4e/vite-plugin-sources` (`tools/vite-plugin-sources`)

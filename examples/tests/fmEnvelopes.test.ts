@@ -1,14 +1,11 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { expect, test } from 'vitest';
+import { readExampleProject, resolveStdlibInclude } from './programSources';
 
 test('FM envelope groups start independently with their own timing and feed the original operators', async () => {
-	const source = await readFile(
-		new URL('../src/projects/audio/keyboardController6OperatorFMSynth.8f4e', import.meta.url),
-		'utf8'
-	);
+	const source = await readExampleProject('audio/keyboardController6OperatorFMSynth.8f4e');
 	const result = await compileProject(parseProjectSource(source), {
-		resolveInclude: id => readFile(new URL(import.meta.resolve(`@8f4e/stdlib/${id}.8f4e`)), 'utf8'),
+		resolveInclude: resolveStdlibInclude,
 		startingMemoryAllocationUnitAddress: 0,
 	});
 	const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));

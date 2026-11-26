@@ -1,14 +1,10 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
+import { readExampleProject, resolveStdlibInclude } from './programSources';
 
 describe('Grids output reset', () => {
 	it('clears one-sample triggers while preserving density controls', async () => {
-		const source = await readFile(
-			new URL('../../../examples/src/projects/audio/gridsPatterns.8f4e', import.meta.url),
-			'utf8'
-		);
+		const source = await readExampleProject('audio/gridsPatterns.8f4e');
 		const result = await compileProject(parseProjectSource(source), { resolveInclude: resolveStdlibInclude });
 		const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));
 		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });

@@ -6,7 +6,8 @@ Example modules and projects used by the editor and tooling. Exports example mod
 
 - `modules/`: reusable example modules.
 - `projects/`: complete example projects.
-- `src/benchmarks/bytecode-size/`: benchmark cases for measuring emitted bytecode size.
+- `src/module-generators/`: deterministic source generators.
+- [`tests/`](tests/README.md): the independent example integration-test project.
 
 ## Loading Examples
 
@@ -39,5 +40,6 @@ Review the resulting table diff before committing it.
 
 ## Testing
 
-Run `npx nx run @8f4e/examples:test` to check example module tests and full-project behavior regressions. The module
-tests run through the CLI; the project regressions compile and step the example projects directly.
+Run `npx nx run @8f4e/examples-integration:test` to check example module tests and full-project behavior regressions.
+The [test project](tests/README.md) depends on examples, the compiler and the CLI; the asset package itself only generates
+source files and does not depend on those consumers. Compiler measurements live in [compiler-benchmarks](../tools/compiler-benchmarks/README.md).

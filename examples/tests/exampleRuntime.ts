@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import {
 	createProjectObjectModel,
@@ -6,7 +5,7 @@ import {
 	type ProjectBlock,
 	type ProjectObjectModel,
 } from '@8f4e/language-spec';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
+import { readExampleProject, resolveStdlibInclude } from './programSources';
 
 export async function loadExample(
 	relativePath: string,
@@ -14,7 +13,7 @@ export async function loadExample(
 	offset = 0,
 	scopeFunction?: string
 ) {
-	const original = await readFile(new URL('../../../examples/src/projects/' + relativePath, import.meta.url), 'utf8');
+	const original = await readExampleProject(relativePath);
 	let project = parseProjectSource(transform(original));
 	if (scopeFunction) {
 		const find = (unit: ProjectObjectModel, inherited: ProjectBlock[]): ProjectObjectModel | undefined => {

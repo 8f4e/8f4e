@@ -1,0 +1,31 @@
+{
+	"name": "@8f4e/compiler-benchmarks",
+	"projectType": "library",
+	"targets": {
+		"log-bytecode-size": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{workspaceRoot}/logs/bytecode-size"],
+			"dependsOn": [{ "projects": ["@8f4e/cli"], "target": "build", "params": "ignore" }],
+			"options": {
+				"command": "node {projectRoot}/scripts/log-bytecode-sizes.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"log-compiler-coverage-counts": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{workspaceRoot}/logs/compiler-coverage-counts"],
+			"dependsOn": [{ "projects": ["@8f4e/compiler"], "target": "build", "params": "ignore" }],
+			"options": {
+				"command": "node {projectRoot}/scripts/log-compiler-coverage-counts.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": { "command": "biome check --write scripts", "cwd": "{projectRoot}" }
+		}
+	},
+	"tags": ["type:tooling", "scope:compiler"]
+}

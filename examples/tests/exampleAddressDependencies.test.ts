@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
+import { type ProgramSourceId, readProgramSource, resolveStdlibInclude } from './programSources';
 
 const sampleProjects = [
 	{ file: 'projects/audio/amigaMods/aftertouch', last: 27, secondPack: 16 },
@@ -12,8 +11,17 @@ const sampleProjects = [
 	{ file: 'projects/audio/amigaMods/lowerIntentions', last: 17, secondPack: 10, missing: [0, 8], baseFallback: true },
 	{ file: 'projects/audio/amigaMods/movinShadows', last: 21, secondPack: 16 },
 	{ file: 'projects/audio/amigaMods/pneumatic', last: 31, secondPack: 16, silent: [9], zeroFallback: true },
-	{ file: 'benchmarks/bytecode-size/hymnToAurora', last: 12, singlePack: true, zeroFallback: true },
-];
+	{ file: 'benchmarks/hymnToAurora', last: 12, singlePack: true, zeroFallback: true },
+] satisfies Array<{
+	file: ProgramSourceId;
+	last: number;
+	secondPack?: number;
+	silent?: number[];
+	singlePack?: boolean;
+	zeroFallback?: boolean;
+	missing?: number[];
+	baseFallback?: boolean;
+}>;
 
 async function instantiate(source: string) {
 	const result = await compileProject(parseProjectSource(source), {
@@ -28,7 +36,7 @@ async function instantiate(source: string) {
 
 describe('example address dependencies', () => {
 	it.each(sampleProjects)('preserves sample selection and fallbacks in $file', async project => {
-		const source = await readFile(new URL(`../../../examples/src/${project.file}.8f4e`, import.meta.url), 'utf8');
+		const source = await readProgramSource(`${project.file}.8f4e`);
 		const { result, lookup } = await instantiate(`${source}
 function lookup
 #export

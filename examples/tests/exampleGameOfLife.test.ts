@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
+import { readExampleProject, resolveStdlibInclude } from './programSources';
 
 const WIDTH = 128;
 const HEIGHT = 128;
@@ -14,7 +13,7 @@ function packFrame(frame: Uint8Array): Uint8Array {
 	return packed;
 }
 
-function evolveFrame(previous: Uint8Array): Uint8Array {
+function evolveFrame(previous: Uint8Array): Uint8Array<ArrayBuffer> {
 	const counts = new Uint8Array(previous.length);
 	// Each live cell contributes to neighbors across the wrapped edges.
 	for (let y = 0; y < HEIGHT; y++) {
@@ -34,10 +33,7 @@ function evolveFrame(previous: Uint8Array): Uint8Array {
 }
 
 async function loadExample(offset: number) {
-	const source = await readFile(
-		new URL('../../../examples/src/projects/visuals/gameOfLife.8f4e', import.meta.url),
-		'utf8'
-	);
+	const source = await readExampleProject('visuals/gameOfLife.8f4e');
 	const result = await compileProject(parseProjectSource(source), {
 		startingMemoryAllocationUnitAddress: offset,
 		resolveInclude: resolveStdlibInclude,

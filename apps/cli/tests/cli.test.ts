@@ -15,7 +15,8 @@ const fixturePath = path.join(testDir, 'fixtures', 'minimal.8f4e');
 const runtimeFixturePath = path.join(testDir, 'fixtures', 'runtimeInspect.8f4e');
 const testPassingFixturePath = path.join(testDir, 'fixtures', 'testPassing.8f4e');
 const testFailingFixturePath = path.join(testDir, 'fixtures', 'testFailing.8f4e');
-const wrapPointerFixturePath = path.resolve(packageRoot, '../../compiler/tests/stdlib/wrap-pointer-float.test.8f4e');
+const stdlibFixturePath = path.join(testDir, 'fixtures', 'stdlib.8f4e');
+const moduleGlob = path.relative(packageRoot, path.join(testDir, 'fixtures', 'module-glob', '*.8f4em'));
 const runtimeBytesPath = path.join(testDir, 'fixtures', 'runtimeBytes.bin');
 const tmpDir = path.join(testDir, '.tmp');
 const wasmPath = path.join(tmpDir, 'audioBuffer.wasm');
@@ -583,7 +584,7 @@ functionEnd`
 	});
 
 	it('runs embedded tests declared in a stdlib fixture file', async () => {
-		const { stdout } = await execCli(['test', wrapPointerFixturePath]);
+		const { stdout } = await execCli(['test', stdlibFixturePath]);
 
 		expect(stdout).toBe('Ran 3 assertions.\n');
 	});
@@ -616,7 +617,7 @@ functionEnd`
 	});
 
 	it('runs test files matched by a glob and skips files without test entries', async () => {
-		const { stdout } = await execCli(['test', '../../examples/src/modules/functions/math/*.8f4em']);
+		const { stdout } = await execCli(['test', moduleGlob]);
 
 		expect(stdout).toBe('No tests found.\n');
 	});

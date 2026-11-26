@@ -112,6 +112,8 @@
     "projects": [
       "*",
       "!@8f4e/release",
+      "!@8f4e/examples-integration",
+      "!@8f4e/compiler-benchmarks",
       "!@8f4e/runtime-daisy",
       "!@8f4e/runtime-linux",
       "!@8f4e/runtime-command",

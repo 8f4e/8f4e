@@ -1,29 +1,27 @@
+import { compileProject } from '@8f4e/cli';
 import { parseProjectSource } from '@8f4e/compiler';
 import { getProjectModules } from '@8f4e/language-spec';
-import { promises as fs } from 'fs';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 
 import { describe, expect, it } from 'vitest';
+import { readExampleProject } from './programSources';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
-const packageRoot = path.resolve(testDir, '..');
-const repoRoot = path.resolve(packageRoot, '..', '..');
-
 const exampleProjects = [
-	'examples/src/projects/audio/audioBuffer.8f4e',
-	'examples/src/projects/audio/keyboardControlledMonoSynth.8f4e',
-	'examples/src/projects/digital/bistableMultivibrators.8f4e',
-	'examples/src/projects/machine-learning/xorProblem.8f4e',
+	'audio/audioBuffer.8f4e',
+	'audio/keyboardControlledMonoSynth.8f4e',
+	'digital/bistableMultivibrators.8f4e',
+	'machine-learning/xorProblem.8f4e',
 ] as const;
 
 function getSnapshotPath(relativePath: string): string {
-	const fileName = relativePath.replace(/[/.]/g, '_') + '.snap';
+	const fileName = relativePath.replace(/\.8f4e$/, '.snap');
 	return path.join(testDir, '__snapshots__', 'exampleProjectsLayout', fileName);
 }
 
 async function loadExampleProject(relativePath: string) {
-	const raw = await fs.readFile(path.join(repoRoot, relativePath), 'utf8');
+	const raw = await readExampleProject(relativePath);
 	return parseProjectSource(raw);
 }
 
@@ -42,8 +40,7 @@ describe('compileProject (example project layout)', () => {
 		const project = await loadExampleProject(relativePath);
 		const moduleBlocks = getProjectModuleBlocks(project);
 
-		const cliModule = await import(pathToFileURL(path.join(packageRoot, 'dist', 'index.js')).href);
-		const result = await cliModule.compileProject(project);
+		const result = await compileProject(project);
 
 		const compiledModuleLayout = Object.values(result.compiledModules)
 			.sort((a, b) => a.index - b.index)

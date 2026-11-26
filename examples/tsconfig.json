@@ -1,11 +1,9 @@
 {
-	"extends": "@8f4e/config/tsconfig.base.json",
+	"extends": "@8f4e/config/tsconfig.node.json",
 	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": "src",
-		"allowImportingTsExtensions": true,
-		"rewriteRelativeImportExtensions": true
+		"noEmit": true,
+		"allowImportingTsExtensions": true
 	},
-	"include": ["src/index.ts"],
+	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules", "dist"]
 }

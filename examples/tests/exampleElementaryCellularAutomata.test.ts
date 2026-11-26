@@ -1,8 +1,7 @@
-import { readFile } from 'node:fs/promises';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
-import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
 import { loadExample } from './exampleRuntime';
+import { readExampleProject, resolveStdlibInclude } from './programSources';
 
 const WIDTH = 256;
 const HEIGHT = 256;
@@ -36,10 +35,7 @@ describe('Elementary cellular automata example', () => {
 	it.each([0, 9])(
 		'packs pixels correctly across rule and seed changes with memory allocation offset %i',
 		async offset => {
-			const source = await readFile(
-				new URL('../../../examples/src/projects/visuals/elementaryCellularAutomata.8f4e', import.meta.url),
-				'utf8'
-			);
+			const source = await readExampleProject('visuals/elementaryCellularAutomata.8f4e');
 			const result = await compileProject(parseProjectSource(source), {
 				startingMemoryAllocationUnitAddress: offset,
 				resolveInclude: resolveStdlibInclude,
