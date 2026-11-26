@@ -150,6 +150,41 @@ export const FONT_CATALOG = {
 		height: 11,
 		load: () => import('../generated/scientifica5x11.ts'),
 	},
+	tomthumb4x6: {
+		name: 'Tom Thumb 4x6',
+		credits: 'Brian Swetland / Robey Pointer\nCC0 1.0',
+		width: 4,
+		height: 6,
+		load: () => import('../generated/tomthumb4x6.ts'),
+	},
+	notjammonoprophet8x8: {
+		name: 'Not Jam Mono Prophet 8',
+		credits: 'Not Jam\nCC0 1.0',
+		width: 8,
+		height: 8,
+		load: () => import('../generated/notjammonoprophet8x8.ts'),
+	},
+	notjammonocrooked8x8: {
+		name: 'Not Jam Mono Crooked 8',
+		credits: 'Not Jam\nCC0 1.0',
+		width: 8,
+		height: 8,
+		load: () => import('../generated/notjammonocrooked8x8.ts'),
+	},
+	kirsch6x16: {
+		name: 'Kirsch 6x16',
+		credits: 'Kirsch Project Authors\nSIL OFL 1.1',
+		width: 6,
+		height: 16,
+		load: () => import('../generated/kirsch6x16.ts'),
+	},
+	unsciifantasy8x8: {
+		name: 'Unscii Fantasy 8x8',
+		credits: 'Viznut\nPublic domain',
+		width: 8,
+		height: 8,
+		load: () => import('../generated/unsciifantasy8x8.ts'),
+	},
 } as const;
 
 export type Font = keyof typeof FONT_CATALOG;

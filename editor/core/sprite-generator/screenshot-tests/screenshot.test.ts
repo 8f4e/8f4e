@@ -5,7 +5,7 @@ const testCases = ['sprite-sheet-with-x11miscfixed6x10-font', 'sprite-sheet-with
 test('previews the backlog font additions at an integer pixel scale', async ({ page }) => {
 	await page.goto('/test-cases/backlog-fonts.html');
 	await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-	await expect(page.locator('canvas')).toHaveCount(4);
+	await expect(page.locator('canvas')).toHaveCount(9);
 	await expect(page).toHaveScreenshot('backlog-fonts.png', { fullPage: true });
 });
 

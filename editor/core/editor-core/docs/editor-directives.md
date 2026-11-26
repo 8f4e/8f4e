@@ -192,6 +192,19 @@ Supported `font` values:
 - `spleen8x16`
 - `templeos8x8`
 - `spleen16x32`
+- `olivettithin8x16`
+- `startrek25th8x9`
+- `dilithiumpixels7x10`
+- `departuremono7x14`
+- `pixelcode6x12`
+- `eaglespcgaalt38x8`
+- `sergamon8x16`
+- `scientifica5x11`
+- `tomthumb4x6`
+- `notjammonoprophet8x8`
+- `notjammonocrooked8x8`
+- `kirsch6x16`
+- `unsciifantasy8x8`
 
 All fonts use Code page 437 glyph slots. Enter characters as ordinary Unicode text, including accents, Greek letters,
 box drawing, and the graphical CP437 symbols. A character unavailable in the selected font appears blank;

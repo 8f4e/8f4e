@@ -12,7 +12,7 @@ import loadFontAtlas, {
 describe('R8 font atlases', () => {
 	it('lists all fonts in increasing order of pixel-cell area', () => {
 		expect(new Set(FONT_NAMES)).toEqual(new Set(Object.keys(FONT_CATALOG)));
-		expect(FONT_NAMES[0]).toBe('spleen5x8');
+		expect(FONT_NAMES[0]).toBe('tomthumb4x6');
 		expect(FONT_NAMES.at(-1)).toBe('spleen16x32');
 		const sizes = FONT_NAMES.map(font => FONT_CATALOG[font].width * FONT_CATALOG[font].height);
 		expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
@@ -76,5 +76,24 @@ describe('R8 font atlases', () => {
 	it('keeps unavailable font characters blank', async () => {
 		const { default: glyphs } = await import('../src/fonts/spleen5x8/ascii');
 		expect(glyphs[130]).toEqual(Array(8).fill('     '));
+	});
+	it.each([
+		['tomthumb4x6', 149],
+		['notjammonoprophet8x8', 148],
+		['notjammonocrooked8x8', 164],
+		['kirsch6x16', 253],
+		['unsciifantasy8x8', 249],
+	] as const)('preserves the printable ASCII and CP437 coverage of %s', async (font, populatedGlyphCount) => {
+		const { default: glyphs } = await import(`../src/fonts/${font}/ascii.ts`);
+		const { width, height } = FONT_CATALOG[font];
+		const hasPixels = (glyph: string[]) => glyph.some(row => row.includes('#'));
+		expect(glyphs).toHaveLength(256);
+		for (const glyph of glyphs) {
+			expect(glyph).toHaveLength(height);
+			expect(glyph.every((row: string) => row.length === width)).toBe(true);
+		}
+		expect(glyphs.slice(33, 127).every(hasPixels)).toBe(true);
+		for (const code of [0, 32, 255]) expect(hasPixels(glyphs[code])).toBe(false);
+		expect(glyphs.filter(hasPixels)).toHaveLength(populatedGlyphCount);
 	});
 });

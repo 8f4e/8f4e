@@ -163,12 +163,63 @@ Scientifica credits [romeovs's Creep](https://github.com/romeovs/creep) for most
 [Raymond W. Ko's Creep2](https://github.com/raymond-w-ko/creep2) for terminal optimizations, and
 [Lemon/artwiz](https://artwizaleczapka.sourceforge.net/) as the basis of some characters.
 
+## Tom Thumb
+
+- Upstream: [Robey Pointer's Tom Thumb](https://robey.lag.net/2010/01/23/tiny-monospace-font.html), based on Brian Swetland's 4×6 font
+- Local converted font: `tomthumb4x6`
+- Source: [`tom-thumb.bdf`](https://github.com/fontpixel/fontpixel.com/blob/b9fb9cec467b828d07a6bf711f9980237f036fe9/fonts/tom-thumb/tom-thumb.bdf), mirrored by FontPixel
+- Source SHA-256: `d07edd9d110a5106d6a19c6bac4897650f1b1a0fba2c6923b75e51dcc2b7ea0b`
+- License: CC0 1.0 Universal (the 2015 update to the upstream release also permits CC BY 3.0)
+- Local license: `editor/core/editor-core/licenses/tom-thumb-CC0-1.0.txt`
+
+The global BDF bounding box is expanded from three to four pixels wide to retain the four-pixel advance,
+with five pixels above the baseline and one below. Existing glyph pixels are unchanged.
+
+## Not Jam Mono Prophet and Mono Crooked
+
+- Upstream: [Not Jam Mono Prophet 8](https://not-jam.itch.io/not-jam-mono-prophet-8) and [Not Jam Mono Crooked 8](https://not-jam.itch.io/not-jam-mono-crooked-8)
+- Local converted fonts: `notjammonoprophet8x8`, `notjammonocrooked8x8`
+- Source: FontPixel's BDF conversions of the 8-pixel TTFs, at commit `b9fb9cec467b828d07a6bf711f9980237f036fe9`:
+  - [`Not-Jam-Mono-Prophet-8-8px.bdf`](https://github.com/fontpixel/fontpixel.com/blob/b9fb9cec467b828d07a6bf711f9980237f036fe9/fonts/not-jam-mono-prophet/Not-Jam-Mono-Prophet-8-8px.bdf), SHA-256 `6e86829b1d825e5884172f843449460d424ea7e76d04197b09faffe57ea4390d`
+  - [`Not-Jam-Mono-Crooked-8-8px.bdf`](https://github.com/fontpixel/fontpixel.com/blob/b9fb9cec467b828d07a6bf711f9980237f036fe9/fonts/not-jam-mono-crooked/Not-Jam-Mono-Crooked-8-8px.bdf), SHA-256 `5708fd190e249086e519f969ce1d473fa2a11813065d9b3e723835bcd46ca903`
+- License: CC0 1.0 Universal
+- Local license: `editor/core/editor-core/licenses/not-jam-CC0-1.0.txt`
+
+The BDFs retain the native eight-pixel design grid. Their seven-pixel global glyph bounding boxes are
+expanded to match the eight-pixel advances; the line height remains eight pixels. Missing CP437 glyphs,
+including most box-drawing and interface symbols, are blank.
+
+## Kirsch
+
+- Upstream: [The kirsch Project Authors](https://github.com/molarmanful/kirsch)
+- Local converted font: `kirsch6x16`
+- Source: [`src/kirsch.bdf`](https://github.com/molarmanful/kirsch/blob/53d7a955172cdd34be61eced03c7d4d08a3fd05c/src/kirsch.bdf), version 0.7.3 source snapshot, commit `53d7a955172cdd34be61eced03c7d4d08a3fd05c`
+- Source SHA-256: `f7b9d5761beaf4195232d623e9c7ae448423085f8a2302828e8ec4f1c7a2cd0d`
+- License: SIL Open Font License 1.1
+- Local license: `editor/core/editor-core/licenses/kirsch-OFL-1.1.txt`
+
+The BDF's global bounding box is normalized to its six-pixel advance and sixteen-pixel line height
+(ascent twelve, descent four). Printable ASCII fits without clipping. The fixed-cell import clips pixels that
+extend beyond the cell in 52 extended CP437 glyphs, including box-drawing characters.
+
+## Unscii Fantasy
+
+- Upstream: [Viznut's Unscii](https://viznut.fi/unscii/)
+- Local converted font: `unsciifantasy8x8`
+- Source: [`unscii-8-fantasy.hex`](https://github.com/viznut/unscii/blob/257b4dfeb50651510fe8b9cf4f151a148a4490e4/fontfiles/unscii-8-fantasy.hex), commit `257b4dfeb50651510fe8b9cf4f151a148a4490e4`
+- Source SHA-256: `7fbda7ebec089ac10ba9b8888b8ca1cad97e0e84788cb7d2b4fbd5bff1d20cc4`
+- License: Public domain (or CC0, per the upstream README)
+- Local notice: `editor/core/editor-core/licenses/unscii-public-domain.txt`
+
+The upstream HEX-to-BDF converter retains the eight-pixel square bitmap strikes before the CP437 import.
+The GPL-licensed `unscii-16-full` variant is not used.
+
 ## CP437 conversion sources
 
 Each bundled font contains 256 CP437 slots. Extended glyphs come from the upstream BDF sources for Terminus,
 Spleen, Cozette, and X11 Misc Fixed, and the Oldschool PC bitmap fonts listed above. TempleOS uses
 [Rendello's bitmap conversion](https://github.com/rendello/templeos_font). The two larger bundled Spleen faces use
 the upstream CP437 BDFs, which include the graphical control-range symbols. Existing printable ASCII designs
-are retained, and unavailable glyphs are blank. The Star Trek, Departure Mono, PixelCode, Sergamon, and Scientifica
-sources listed above also map their available Unicode characters into those slots. Upstream font files are downloaded
-separately and are not bundled in this repository.
+are retained, and unavailable glyphs are blank. The remaining conversion sources above also map their available
+Unicode characters into those slots. Upstream font files are downloaded separately and are not bundled in this
+repository.
