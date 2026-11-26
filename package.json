@@ -25,7 +25,7 @@
     "@biomejs/biome": "2.6.8",
     "@nx/devkit": "23.3.2",
     "@nx/js": "23.3.2",
-    "@nx/vite": "23.3.2",
+    "@nx/vitest": "23.3.2",
     "@playwright/test": "1.65.1",
     "@types/audioworklet": "0.0.102",
     "@types/node": "24.13.2",

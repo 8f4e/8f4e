@@ -1,6 +1,7 @@
 # Nx Workspace Workflow
 
-This project now uses Nx for improved monorepo management with Vite as the modern build tool.
+Nx discovers workspace projects, schedules their build and validation tasks, and caches the results. Vite builds and
+serves the web applications and bundled libraries; Vitest runs their tests through Nx.
 
 ## Key Benefits
 
@@ -8,44 +9,41 @@ This project now uses Nx for improved monorepo management with Vite as the moder
 - **Dependency Management**: Automatic build ordering based on project dependencies
 - **Affected Builds**: Only rebuild projects affected by changes
 - **Better Developer Experience**: Rich tooling and project graph visualization
-- **No Cloud Dependencies**: All caching and features work locally without external services
+- **Local development**: Nx tasks and local caching work without connecting to Nx Cloud
 
 ## Available Commands
 
 ### Building
 
 ```bash
-# Build all packages (uses Nx caching)
-npm run build
-
 # Build specific project
 npx nx run @8f4e/compiler:build
 
-# Build all projects with Nx
-npx nx run-many --target=build
+# Build all non-native projects
+npx nx run-many --target=build --exclude=@8f4e/runtime-linux,@8f4e/runtime-daisy
 
 # Build only affected projects
-npx nx affected --target=build --base=main
+npx nx affected --target=build --base=main --exclude=@8f4e/runtime-linux,@8f4e/runtime-daisy
 ```
 
 ### Testing
 
 ```bash
-# Run all tests
-npm test
+# Run the release test suite
+npx nx run @8f4e/release:tests
 
 # Run tests for specific project
 npx nx run @8f4e/compiler:test
 
 # Run only affected tests
-npx nx affected --target=test --base=main
+npx nx affected --target=test --base=main --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
 ```
 
 ### Type Checking
 
 ```bash
-# Type check all projects
-npm run typecheck
+# Type check all projects with a typecheck target
+npx nx run-many --target=typecheck
 
 # Type check specific project
 npx nx run @8f4e/compiler:typecheck
@@ -54,8 +52,11 @@ npx nx run @8f4e/compiler:typecheck
 ### Development
 
 ```bash
-# Start development server (unchanged)
-npm run dev
+# Start the editor development server
+npx nx run @8f4e/editor-webapp:dev
+
+# Start the product website development server
+npx nx run @8f4e/8f4e-website:dev
 
 # Watch build for specific project
 npx nx run @8f4e/compiler:dev
@@ -147,13 +148,3 @@ release validation, do not collect coverage. Nx caches regular test results, not
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.
-
-## Migration Notes
-
-- Vite configuration optimized for performance
-- All existing npm scripts still work
-- Package names and exports are unchanged; package manifests own their Nx configuration
-- TypeScript builds work exactly as before
-- Dependency resolution works correctly
-
-This setup provides the foundation for modern development experience with the latest Vite build system.
