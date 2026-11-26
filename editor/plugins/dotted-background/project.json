@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-dotted-background",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/dotted-background/src",
   "projectType": "library",
   "targets": {
     "build": {

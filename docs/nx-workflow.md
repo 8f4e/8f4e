@@ -97,6 +97,15 @@ workspaces by their package names; native applications without npm manifests dec
 - **package.json**: Updated scripts to use Nx commands
 - **Workspaces**: Still configured for package linking compatibility
 
+In `project.json`, `sourceRoot` is relative to the workspace root, not the package directory. For example,
+`@8f4e/editor-webapp` uses `apps/editor-webapp/src`. Target commands can use `{projectRoot}` to avoid repeating
+physical project locations. The independently maintained Glugglugglug submodule is the exception to the parent
+workspace's source-root convention.
+
+Release metrics discover package names, roots, versions, and test targets from the Nx project graph. They select
+projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
+`package-lock.json` or recursively scanning the repository.
+
 ## Production and test inputs
 
 Builds use `production` and `^production`; tests use their own `default` files and dependency `production` files. Type checks keep their own test files. Test-only project imports still create graph edges even when declared as dev dependencies, so use local sample fixtures when the source package is not part of the behavior under test.

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-entry-outlines",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/entry-outlines/src",
   "projectType": "library",
   "targets": {
     "build": {

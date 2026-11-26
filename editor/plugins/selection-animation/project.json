@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-selection-animation",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/selection-animation/src",
   "projectType": "library",
   "targets": {
     "build": {

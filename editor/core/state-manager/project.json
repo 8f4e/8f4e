@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/state-manager",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/core/state-manager/src",
   "projectType": "library",
   "targets": {
     "build": {

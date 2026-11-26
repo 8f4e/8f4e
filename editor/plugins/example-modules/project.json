@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-example-modules",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/example-modules/src",
   "projectType": "library",
   "targets": {
     "build": {

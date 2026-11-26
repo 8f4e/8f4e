@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-grouping",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/grouping/src",
   "projectType": "library",
   "targets": {
     "build": {

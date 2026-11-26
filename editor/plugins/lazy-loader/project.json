@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-lazy-loader",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/lazy-loader/src",
   "projectType": "library",
   "targets": {
     "build": {

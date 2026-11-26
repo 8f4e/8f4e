@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-loose-wires",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/loose-wires/src",
   "projectType": "library",
   "targets": {
     "build": {

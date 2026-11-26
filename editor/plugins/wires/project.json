@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wires",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/wires/src",
   "projectType": "library",
   "targets": {
     "build": {

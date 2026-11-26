@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-keyboard-memory",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/keyboard-memory/src",
   "projectType": "library",
   "targets": {
     "build": {

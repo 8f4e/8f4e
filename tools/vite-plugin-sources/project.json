@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/vite-plugin-sources",
-	"sourceRoot": "src",
+	"sourceRoot": "tools/vite-plugin-sources/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

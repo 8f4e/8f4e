@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { brotliCompress, gzip } from 'node:zlib';
-import { getWorkspacePackageRoots } from './workspace-package-roots.mjs';
+import { getWorkspaceProjects } from './workspace-projects.mjs';
 
 const gzipAsync = promisify(gzip);
 const brotliCompressAsync = promisify(brotliCompress);
@@ -25,8 +25,8 @@ const bundleSizeConfig = await readBundleSizeConfig(options.configPath ?? defaul
 const outputDir = path.resolve(workspaceRoot, options.outputDir ?? bundleSizeConfig.outDir ?? defaultOutputDir);
 const packageFilter = options.packages.length > 0 ? new Set(options.packages) : null;
 const gitMetadata = getGitMetadata();
-const packageManifests = await findPackageManifests(workspaceRoot);
-const packageManifestsByName = await getPackageManifestsByName(packageManifests);
+const projects = await getWorkspaceProjects(workspaceRoot);
+const projectsByName = new Map(projects.map(project => [project.name, project]));
 const packageResults = [];
 const skippedResults = [];
 
@@ -35,20 +35,19 @@ for (const [packageName, packageConfig] of Object.entries(bundleSizeConfig.packa
 		continue;
 	}
 
-	const manifestPath = packageManifestsByName.get(packageName);
+	const project = projectsByName.get(packageName);
 
-	if (!manifestPath) {
-		console.warn(`Skipping ${packageName}: no package.json found`);
+	if (!project) {
+		console.warn(`Skipping ${packageName}: no Nx workspace package found`);
 		continue;
 	}
 
-	const packageRoot = path.dirname(manifestPath);
-	const packageJson = await readJson(manifestPath);
+	const { root: packageRoot, projectName, version } = project;
 
-	if (await hasLoggedPackageVersion(outputDir, packageName, packageJson.version ?? null)) {
+	if (await hasLoggedPackageVersion(outputDir, packageName, version)) {
 		skippedResults.push({
 			packageName,
-			version: packageJson.version ?? null,
+			version,
 		});
 		continue;
 	}
@@ -70,16 +69,15 @@ for (const [packageName, packageConfig] of Object.entries(bundleSizeConfig.packa
 		continue;
 	}
 
-	const projectName = await getProjectName(packageRoot, packageName);
 	const entry = {
 		schemaVersion: 1,
 		recordedAt: new Date().toISOString(),
 		commit: gitMetadata.commit,
 		branch: gitMetadata.branch,
-		releaseTag: findReleaseTag(gitMetadata.allTags, projectName, packageJson.version),
+		releaseTag: findReleaseTag(gitMetadata.allTags, projectName, version),
 		packageName,
 		projectName,
-		version: packageJson.version ?? null,
+		version,
 		bytes: sumFiles(measuredEntries),
 	};
 
@@ -201,31 +199,6 @@ Notes:
   - When a Vite manifest exists, bytes include the matched entry and its static imports.
   - Log entries contain aggregate numeric byte totals for graphing.
   - Scoped packages use their package name as a nested path, e.g. logs/bundle-sizes/@8f4e/compiler.json.`);
-}
-
-async function findPackageManifests(root) {
-	const roots = [root, ...(await getWorkspacePackageRoots(root))];
-	const manifests = await Promise.all(
-		roots.map(async packageRoot => {
-			const manifest = path.join(packageRoot, 'package.json');
-			return (await pathExists(manifest)) ? manifest : null;
-		})
-	);
-	return manifests.filter(Boolean);
-}
-
-async function getPackageManifestsByName(packageManifests) {
-	const manifestsByName = new Map();
-
-	for (const manifestPath of packageManifests) {
-		const packageJson = await readJson(manifestPath);
-
-		if (packageJson.name) {
-			manifestsByName.set(packageJson.name, manifestPath);
-		}
-	}
-
-	return manifestsByName;
 }
 
 async function resolveBundleEntries(distRoot, fileRules) {
@@ -453,17 +426,6 @@ function getPackageLogPath(outputRoot, packageName) {
 	});
 	const fileName = `${pathSegments.pop()}.json`;
 	return path.join(outputRoot, ...pathSegments, fileName);
-}
-
-async function getProjectName(packageRoot, packageName) {
-	const projectJsonPath = path.join(packageRoot, 'project.json');
-
-	if (!(await pathExists(projectJsonPath))) {
-		return packageName;
-	}
-
-	const projectJson = await readJson(projectJsonPath);
-	return projectJson.name ?? packageName;
 }
 
 function findReleaseTag(tags, projectName, version) {

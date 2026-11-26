@@ -18,16 +18,13 @@ test('measures a package in a relocated directory using only its name and packag
 	const packageRoot = path.join(root, packageLocation);
 	const distRoot = path.join(packageRoot, 'custom/output');
 	await fs.mkdir(distRoot, { recursive: true });
+	await fs.writeFile(path.join(root, 'nx.json'), '{}');
 	await fs.writeFile(
-		path.join(root, 'package-lock.json'),
-		JSON.stringify({
-			packages: {
-				[packageLocation]: { name: packageName },
-				[`node_modules/${packageName}`]: { link: true, resolved: packageLocation },
-			},
-		})
+		path.join(root, 'package.json'),
+		JSON.stringify({ name: 'test-workspace', private: true, workspaces: ['anywhere/*'] })
 	);
 	await fs.writeFile(path.join(packageRoot, 'package.json'), JSON.stringify({ name: packageName, version: '1.0.0' }));
+	await fs.writeFile(path.join(packageRoot, 'project.json'), JSON.stringify({ name: 'relocated-nx-project' }));
 	const contents = 'export const n = 42;\n';
 	await fs.writeFile(path.join(distRoot, 'index.js'), contents);
 	const config = {
@@ -38,6 +35,7 @@ test('measures a package in a relocated directory using only its name and packag
 	await execFileAsync(process.execPath, [script], { cwd: root });
 	const [entry] = JSON.parse(await fs.readFile(path.join(root, 'logs/bundle-sizes', `${packageName}.json`), 'utf8'));
 	assert.equal(entry.packageName, packageName);
+	assert.equal(entry.projectName, 'relocated-nx-project');
 	assert.equal(entry.bytes.raw, Buffer.byteLength(contents));
 	assert.ok(entry.bytes.gzip > 0);
 

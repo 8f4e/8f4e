@@ -1,7 +1,7 @@
 {
 	"name": "@8f4e/config",
 	"projectType": "library",
-	"sourceRoot": "src",
+	"sourceRoot": "tools/config/src",
 	"targets": {
 		"lint": {
 			"executor": "nx:run-commands",

@@ -29,6 +29,8 @@
   Preserve COOP/COEP where shared memory is used.
 - Use `npx nx show project <project>` to find available targets. Use Nx builds so workspace aliases resolve to
   built exports, including when changing an API used by a Vite consumer.
+- Set Nx `sourceRoot` relative to the workspace root (for example `apps/editor-webapp/src`); run commands from
+  `{projectRoot}` where possible. The standalone Glugglugglug submodule owns its own project metadata.
 - Each package builds into its own `dist/`. Clear it before the first emitter (`rm -rf dist && tsc` for plain
   TypeScript packages). Mixed builds clean once so later steps preserve earlier outputs.
 - Production builds and generators use `production` inputs. Tests and type checks retain their own test sources

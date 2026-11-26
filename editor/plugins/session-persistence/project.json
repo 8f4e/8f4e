@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-session-persistence",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/session-persistence/src",
   "projectType": "library",
   "targets": {
     "build": {

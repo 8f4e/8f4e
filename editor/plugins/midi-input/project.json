@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-midi-input",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/midi-input/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-assertion-markers",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/assertion-markers/src",
   "projectType": "library",
   "targets": {
     "build": {

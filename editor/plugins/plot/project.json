@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-plot",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/plot/src",
   "projectType": "library",
   "targets": {
     "build": {

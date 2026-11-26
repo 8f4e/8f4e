@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-test-runner",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/test-runtime/packages/runtime-test-runner/src",
   "projectType": "library",
   "targets": {
     "build": {

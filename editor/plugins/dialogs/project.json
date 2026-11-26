@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-dialogs",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/dialogs/src",
   "projectType": "library",
   "targets": {
     "build": {

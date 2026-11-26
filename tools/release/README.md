@@ -16,4 +16,10 @@ Measurement logs are written under `logs/`. The root `bundle-size.config.json` i
 the metrics dashboard; it identifies packages by name, with `distDir` relative to each discovered package root and
 entry patterns relative to that output directory. The root scripts directory is reserved for workspace maintenance utilities.
 
+Package discovery uses the Nx project graph and its package-manager workspace membership, project roots, source roots,
+package versions, and test targets. It preserves the default set previously discovered through npm workspace links.
+The standalone Glugglugglug submodule retains its local `src` adapter; other projects use Nx's workspace-relative
+`sourceRoot`. For local TSDoc and test-coverage measurements, the runners accept repeated `--package-root <directory>`
+filters for Nx package projects under those directories and `--out-dir <directory>` to write isolated results.
+
 For actual releases and deployment, follow the [release instructions](../../docs/releasing.md).

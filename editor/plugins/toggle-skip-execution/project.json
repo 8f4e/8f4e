@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-toggle-skip-execution",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/toggle-skip-execution/src",
   "projectType": "library",
   "targets": {
     "build": {

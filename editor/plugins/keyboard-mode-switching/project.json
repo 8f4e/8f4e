@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-keyboard-mode-switching",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/keyboard-mode-switching/src",
   "projectType": "library",
   "targets": {
     "build": {

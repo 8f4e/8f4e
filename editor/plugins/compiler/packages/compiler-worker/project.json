@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler-worker",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/compiler/packages/compiler-worker/src",
   "projectType": "library",
   "targets": {
     "build": {

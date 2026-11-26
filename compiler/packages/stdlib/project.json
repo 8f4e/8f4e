@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/stdlib",
-	"sourceRoot": "std",
+	"sourceRoot": "compiler/packages/stdlib/std",
 	"projectType": "library",
 	"targets": {
 		"test": {

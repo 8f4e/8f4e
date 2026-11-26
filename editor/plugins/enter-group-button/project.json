@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-enter-group-button",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/enter-group-button/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-files",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/project-files/src",
   "projectType": "library",
   "targets": {
     "build": {

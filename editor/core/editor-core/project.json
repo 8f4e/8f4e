@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-core",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/core/editor-core/src",
   "projectType": "library",
   "targets": {
     "build": {

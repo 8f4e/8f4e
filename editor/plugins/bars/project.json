@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-bars",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/bars/src",
   "projectType": "library",
   "targets": {
     "build": {

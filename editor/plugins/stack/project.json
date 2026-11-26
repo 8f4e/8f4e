@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-stack",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/stack/src",
   "projectType": "library",
   "targets": {
     "build": {

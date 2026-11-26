@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-webmcp",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/editor-webmcp/src",
   "projectType": "library",
   "targets": {
     "build": {

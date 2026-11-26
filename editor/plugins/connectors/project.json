@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-connectors",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/connectors/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wasm-export",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/wasm-export/src",
   "projectType": "library",
   "targets": {
     "build": {

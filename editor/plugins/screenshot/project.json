@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-screenshot",
-  "sourceRoot": "src",
+  "sourceRoot": "editor/plugins/screenshot/src",
   "projectType": "library",
   "targets": {
     "build": {
