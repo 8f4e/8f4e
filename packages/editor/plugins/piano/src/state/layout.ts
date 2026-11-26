@@ -56,6 +56,11 @@ function resolvePianoLayout(
 		return;
 	}
 
+	const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.sourceLineIndex];
+	if (displayRow === undefined) {
+		return;
+	}
+
 	const scope = getCodeBlockMemoryScope(graphicData);
 	const pressedKeysList = resolveMemoryAddress(state, scope, pianoKeyboard.pressedKeysListMemoryId);
 	const pressedKeyCount = resolveMemoryAddress(state, scope, pianoKeyboard.pressedKeyCountMemoryId);
@@ -71,9 +76,6 @@ function resolvePianoLayout(
 		return;
 	}
 
-	const displayRow =
-		graphicData.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.sourceLineIndex] ??
-		pianoKeyboard.sourceLineIndex;
 	const keyWidth = state.viewport.vGrid * 2;
 	const keyY = state.viewport.hGrid;
 	const keyHeight = state.viewport.hGrid * 5;

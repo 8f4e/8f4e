@@ -114,6 +114,23 @@ afterEach(() => {
 });
 
 describe('piano plugin', () => {
+	it('draws a piano below @hide only while the block is expanded', async () => {
+		const test = await setup([...source.slice(0, 3), '; @hide', ...source.slice(3)]);
+		const pianoLine = 4;
+		expect(test.codeBlock.displayModel.sourceLineIndexToDisplayRow[pianoLine]).toBeUndefined();
+
+		test.render();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+
+		test.store.set('project.selectedCodeBlock', test.codeBlock);
+		expect(test.codeBlock.displayModel.sourceLineIndexToDisplayRow[pianoLine]).toBeDefined();
+		test.render();
+		expect(test.draw.drawFill).toHaveBeenCalled();
+
+		test.store.set('project.selectedCodeBlock', undefined);
+		test.render();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+	});
 	it('rebinds drawing and interaction after compilation relocates memory without changing layout', async () => {
 		const test = await setup();
 		const replacement = await compileProject(
