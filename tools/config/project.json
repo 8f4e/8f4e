@@ -6,8 +6,8 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write tools/config/src",
-				"cwd": "{workspaceRoot}"
+				"command": "biome check --write src",
+				"cwd": "{projectRoot}"
 			}
 		},
 		"build": {

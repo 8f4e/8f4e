@@ -29,8 +29,8 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write editor/plugins/dotted-background/src editor/plugins/dotted-background/screenshot-tests",
-        "cwd": "{workspaceRoot}"
+        "command": "biome check --write src screenshot-tests",
+        "cwd": "{projectRoot}"
       }
     },
     "test:screenshot": {

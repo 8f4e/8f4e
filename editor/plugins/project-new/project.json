@@ -19,7 +19,7 @@
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "biome check --write editor/plugins/project-new/src", "cwd": "{workspaceRoot}" }
+      "options": { "command": "biome check --write src", "cwd": "{projectRoot}" }
     }
   },
   "tags": ["type:library", "scope:editor"]

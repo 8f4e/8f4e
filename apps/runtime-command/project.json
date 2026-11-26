@@ -12,7 +12,7 @@
 		},
 		"lint": {
 			"executor": "nx:run-commands",
-			"options": { "command": "biome check --write apps/runtime-command", "cwd": "{workspaceRoot}" }
+			"options": { "command": "biome check --write .", "cwd": "{projectRoot}" }
 		}
 	},
 	"tags": ["type:tooling", "scope:runtime"]

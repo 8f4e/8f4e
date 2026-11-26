@@ -33,8 +33,8 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write editor/plugins/toggle-disabled/src",
-        "cwd": "{workspaceRoot}"
+        "command": "biome check --write src",
+        "cwd": "{projectRoot}"
       }
     }
   },

@@ -14,8 +14,8 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write compiler/packages/sub-program/packages/constant-resolver/src",
-				"cwd": "{workspaceRoot}"
+				"command": "biome check --write src",
+				"cwd": "{projectRoot}"
 			}
 		},
 		"dev": {
