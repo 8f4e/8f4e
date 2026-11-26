@@ -8,7 +8,7 @@ Run from the workspace root:
 ```sh
 npx nx run @8f4e/metrics-dashboard:serve
 npx nx run @8f4e/metrics-dashboard:test
-npx nx run @8f4e/metrics-dashboard:test --coverage
+npx nx run @8f4e/metrics-dashboard:test --coverage --skip-nx-cache
 npx nx run @8f4e/metrics-dashboard:build
 ```
 

@@ -14,7 +14,6 @@ import type { InlineConfig } from 'vitest/node';
  */
 export const sharedCoverage = {
 	provider: 'v8' as const,
-	reportsDirectory: 'coverage',
 	reporter: ['text', 'json', 'json-summary', 'html'],
 	include: ['src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}'],
 	exclude: [

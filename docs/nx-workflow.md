@@ -113,11 +113,10 @@ Builds use `production` and `^production`; tests use their own `default` files a
 Tests build their workspace dependencies by default because imports resolve to built package exports, unless a target
 has a more specific dependency configuration.
 
-The shared Vitest preset measures authored production files in `src/`, including unimported files, and writes reports to
-`{projectRoot}/coverage` when requested with `--coverage`. Nx's test default caches this directory. Tests that do not
-produce coverage (such as native or integration-only suites) explicitly declare empty outputs. Release validation runs
-regular tests without collecting coverage. Generated data remains a production build input but is excluded from source
-coverage.
+Test coverage is on demand only. Run `npx nx test <project> --coverage --skip-nx-cache` to generate a fresh report in
+the project's `coverage/` directory. The shared Vitest preset includes unimported authored production files in `src/`;
+generated data remains a production build input but is excluded from source coverage. Ordinary tests, including CI and
+release validation, do not collect coverage. Nx caches regular test results, not the coverage reports.
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.

@@ -25,7 +25,7 @@ For local TSDoc measurements, the runner accepts repeated `--package-root <direc
 filters for Nx package projects under those directories and `--out-dir <directory>` to write isolated results.
 A directory filter that matches no Nx package projects is an error rather than an empty measurement.
 
-Release validation runs tests without collecting historical test coverage. To measure coverage locally, run
-`npx nx test <project> --coverage`; reports stay in that project's `coverage/` directory.
+Release validation runs tests without collecting coverage or historical test coverage metrics. To measure coverage on
+demand, run `npx nx test <project> --coverage --skip-nx-cache`; reports stay in that project's `coverage/` directory.
 
 For actual releases and deployment, follow the [release instructions](../../docs/releasing.md).

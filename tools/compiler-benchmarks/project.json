@@ -24,7 +24,6 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
-			"outputs": [],
 			"dependsOn": [{ "projects": ["@8f4e/compiler"], "target": "build", "params": "ignore" }],
 			"inputs": ["default", "^production", { "runtime": "node -p \"process.version + ':' + process.versions.v8\"" }],
 			"options": {

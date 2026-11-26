@@ -58,8 +58,8 @@ Available presets:
 Coverage includes authored production JavaScript and TypeScript files under the package's `src/`, even if no test imports
 them. Declaration files, test files, test helper directories, snapshot directories, generated source directories and
 `src/fixtures/` are excluded.
-Reports use the package-local `coverage/` directory, which is the shared Nx test output. Run `nx test <project> --coverage`
-to generate the reports.
+Coverage is generated only on demand using `npx nx test <project> --coverage --skip-nx-cache`. Reports use Vitest's
+default package-local `coverage/` directory and are not cached by Nx.
 
 ### Vite Configuration
 

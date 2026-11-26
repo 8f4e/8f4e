@@ -20,7 +20,6 @@
 		"test": {
 			"executor": "nx:run-commands",
 			"dependsOn": ["build"],
-			"outputs": [],
 			"options": {
 				"commands": [{ "command": "node --test tests/*.test.mjs", "forwardAllArgs": false }],
 				"cwd": "{projectRoot}"
