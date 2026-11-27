@@ -269,9 +269,15 @@ Thanks to everyone who has contributed to 8f4e.
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3APrisha38">🔀 1</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
+<a href="https://github.com/rayw-lab"><img src="https://github.com/rayw-lab.png?size=96" width="72" alt="@rayw-lab"><br><sub><b>Ray W.</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Arayw-lab">🔀 1</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
 <a href="https://github.com/satyam0777"><img src="https://github.com/satyam0777.png?size=96" width="72" alt="@satyam0777"><br><sub><b>Satyam Prajapati</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Asatyam0777">🔀 1</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/TanmayNileshShinde"><img src="https://github.com/TanmayNileshShinde.png?size=96" width="72" alt="@TanmayNileshShinde"><br><sub><b>Tanmay Nilesh Shinde</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3ATanmayNileshShinde">🔀 1</a></sub>
