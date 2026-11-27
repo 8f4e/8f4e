@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { foldArgumentContinuationLines } from './sourceLines';
+import { foldArgumentContinuationLines, prepareSourceLines } from './sourceLines';
 import { SyntaxErrorCode } from './syntax/syntaxError';
 
 describe('foldArgumentContinuationLines', () => {
@@ -30,6 +30,28 @@ describe('foldArgumentContinuationLines', () => {
 			{ line: 'push 3', lineNumber: 9 },
 		]);
 		expect(code).toEqual(original);
+	});
+
+	it('maps continuation rows to their owners and skips incomplete rows independently', () => {
+		const prepared = prepareSourceLines([
+			'module audio',
+			'push',
+			'- 8 ; @stack',
+			'float level 0.5',
+			'-',
+			'int[] samples ; @watch',
+			'- 2 1 2',
+			'moduleEnd',
+		]);
+
+		expect(prepared.lines).toEqual([
+			{ line: 'module audio', lineNumber: 0 },
+			{ line: 'push 8', lineNumber: 1 },
+			{ line: 'float level 0.5', lineNumber: 3 },
+			{ line: 'int[] samples 2 1 2', lineNumber: 5 },
+			{ line: 'moduleEnd', lineNumber: 7 },
+		]);
+		expect(prepared.instructionLineBySourceLine).toEqual([0, 1, 1, 3, undefined, 5, 5, 7]);
 	});
 
 	it('preserves quoted semicolons and removes inline comments from continuation arguments', () => {

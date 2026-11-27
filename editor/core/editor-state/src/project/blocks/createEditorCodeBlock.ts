@@ -32,6 +32,11 @@ export function createEditorCodeBlock(overrides: Partial<EditorCodeBlock> = {}):
 		cursor,
 		name,
 		code,
+		sourcePreparation: overrides.sourcePreparation ?? {
+			lines: [],
+			instructionLineBySourceLine: [],
+			parsedMemoryLineBySourceLine: [],
+		},
 		tabStopsByLine: code.map(() => []),
 		directiveDisplayState: {},
 		displayModel: buildDisplayModel(code),

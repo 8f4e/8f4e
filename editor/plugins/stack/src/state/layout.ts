@@ -60,17 +60,17 @@ export function registerStackPreparation(
 					return;
 				}
 
-				const stackAnalysisLine = findStackAnalysisLine(
-					stackAnalysisLines,
-					directive.sourceLineIndex,
-					directive.isTrailing
-				);
+				const sourceLineNumber = directive.isTrailing
+					? graphicData.sourcePreparation.instructionLineBySourceLine[directive.sourceLineIndex]
+					: directive.sourceLineIndex;
+				if (sourceLineNumber === undefined) return;
+				const stackAnalysisLine = findStackAnalysisLine(stackAnalysisLines, sourceLineNumber, directive.isTrailing);
 				if (!stackAnalysisLine) {
 					return;
 				}
 
-				const displayRow =
-					graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex] ?? directive.sourceLineIndex;
+				const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex];
+				if (displayRow === undefined) return;
 				const tabStopsByLine = graphicData.tabStopsByLine;
 				const visualLineWidth = getVisualLineWidth(
 					graphicData.code[directive.sourceLineIndex] || '',

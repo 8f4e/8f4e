@@ -76,6 +76,11 @@ export function createMockCodeBlock(options: Partial<EditorCodeBlock> & { cursor
 		cursor,
 		name,
 		code,
+		sourcePreparation: overrides.sourcePreparation ?? {
+			lines: [],
+			instructionLineBySourceLine: [],
+			parsedMemoryLineBySourceLine: [],
+		},
 		tabStopsByLine: code.map(() => []),
 		directiveDisplayState: {},
 		displayModel,

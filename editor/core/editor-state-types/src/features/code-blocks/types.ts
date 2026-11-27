@@ -3,6 +3,7 @@
  */
 
 import type {
+	CompilerASTLine,
 	DocumentBlockType,
 	PlannedMemoryDeclaration,
 	ProjectEntryName,
@@ -33,6 +34,12 @@ export interface MemoryIdentifier {
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
 
+export interface CodeBlockSourcePreparation {
+	lines: Array<{ line: string; lineNumber: number }>;
+	instructionLineBySourceLine: Array<number | undefined>;
+	parsedMemoryLineBySourceLine: Array<CompilerASTLine | undefined>;
+}
+
 /**
  * A single parsed directive record found in a code block's raw lines.
  * Covers editor directives (`; @name`).
@@ -62,6 +69,8 @@ export interface EditorCodeBlock {
 	width: number;
 	height: number;
 	code: string[];
+	/** Logical source lines and physical-row ownership, refreshed once whenever source changes. */
+	sourcePreparation: CodeBlockSourcePreparation;
 	/** Editor-owned source that can be inspected but not edited, moved, or deleted. */
 	readonly readOnly?: boolean;
 	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
