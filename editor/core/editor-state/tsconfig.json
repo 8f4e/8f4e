@@ -1,0 +1,10 @@
+{
+	"extends": "@8f4e/config/tsconfig.dom.json",
+	"compilerOptions": {
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"paths": {
+			"~/*": ["./src/*"]
+		}
+	}
+}

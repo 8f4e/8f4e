@@ -1,0 +1,8 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.library.json",
+	"compilerOptions": {
+		"lib": ["es2023", "webworker"]
+	},
+	"exclude": ["${configDir}/node_modules", "${configDir}/src/**/*.test.ts"]
+}

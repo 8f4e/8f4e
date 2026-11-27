@@ -9011,5 +9011,127 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "ef166e2a6cefe00f79b8d52a02bb491617a8b734",
+		"recordedAt": "2026-11-26T15:17:51.597Z",
+		"coverage": {
+			"documented": 55,
+			"total": 175,
+			"percentage": 31.4,
+			"byKind": {
+				"function": {
+					"documented": 17,
+					"total": 26,
+					"percentage": 65.4
+				},
+				"class-method": {
+					"documented": 7,
+					"total": 24,
+					"percentage": 29.2
+				},
+				"type": {
+					"documented": 5,
+					"total": 12,
+					"percentage": 41.7
+				},
+				"property-signature": {
+					"documented": 16,
+					"total": 82,
+					"percentage": 19.5
+				},
+				"interface": {
+					"documented": 9,
+					"total": 18,
+					"percentage": 50
+				},
+				"variable": {
+					"documented": 0,
+					"total": 5,
+					"percentage": 0
+				},
+				"method-signature": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				},
+				"class": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 0,
+					"total": 5,
+					"percentage": 0
+				},
+				"constructor": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				}
+			}
+		}
+	},
+	{
+		"commit": "34816b5c7c8e485e834312a387abc8947e1487e8",
+		"recordedAt": "2026-11-26T21:05:43.397Z",
+		"coverage": {
+			"documented": 55,
+			"total": 175,
+			"percentage": 31.4,
+			"byKind": {
+				"function": {
+					"documented": 17,
+					"total": 26,
+					"percentage": 65.4
+				},
+				"class-method": {
+					"documented": 7,
+					"total": 24,
+					"percentage": 29.2
+				},
+				"type": {
+					"documented": 5,
+					"total": 12,
+					"percentage": 41.7
+				},
+				"property-signature": {
+					"documented": 16,
+					"total": 82,
+					"percentage": 19.5
+				},
+				"interface": {
+					"documented": 9,
+					"total": 18,
+					"percentage": 50
+				},
+				"variable": {
+					"documented": 0,
+					"total": 5,
+					"percentage": 0
+				},
+				"method-signature": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				},
+				"class": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 0,
+					"total": 5,
+					"percentage": 0
+				},
+				"constructor": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				}
+			}
+		}
 	}
 ]

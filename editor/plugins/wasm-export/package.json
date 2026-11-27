@@ -1,0 +1,37 @@
+{
+  "name": "@8f4e/editor-plugin-wasm-export",
+  "version": "0.3.9",
+  "private": true,
+  "description": "WebAssembly Export plugin for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-state": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/web-ui": "*",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
+  }
+}

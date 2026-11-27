@@ -40,12 +40,12 @@ Add a small codegen-level peephole optimization path for integer arithmetic.
 ## Implementation Plan
 
 ### Step 1: Add bytecode provenance for stack constants
-- Extend `StackItem` in `packages/compiler/packages/language-spec/src/semantic.ts` with narrow provenance metadata for compiler-emitted constants, such as `constantByteCodeLength` or a bytecode span.
-- Set that metadata in `packages/compiler/src/instructionCompilers/push/handlers/pushLiteral.ts` for integer literals.
+- Extend `StackItem` in `compiler/packages/language-spec/src/semantic.ts` with narrow provenance metadata for compiler-emitted constants, such as `constantByteCodeLength` or a bytecode span.
+- Set that metadata in `compiler/src/instructionCompilers/push/handlers/pushLiteral.ts` for integer literals.
 - Ensure locals, memory loads, calls, and non-folded arithmetic do not inherit removable-constant provenance accidentally.
 
 ### Step 2: Add peephole bytecode helpers
-- Add a utility under `packages/compiler/src/utils/`, such as `peepholeByteCode.ts` or `arithmeticOptimization.ts`.
+- Add a utility under `compiler/src/utils/`, such as `peepholeByteCode.ts` or `arithmeticOptimization.ts`.
 - Support removing the trailing bytecode for a proven top-stack constant.
 - Support replacing that trailing bytecode with another `i32.const`.
 - Support replacing two removable constant operands with one folded `i32.const`.
@@ -87,16 +87,16 @@ Add a small codegen-level peephole optimization path for integer arithmetic.
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/semantic.ts` - Stack item bytecode provenance metadata.
-- `packages/compiler/src/instructionCompilers/push/handlers/pushLiteral.ts` - Mark removable integer constants.
-- `packages/compiler/src/utils/knownIntegerValue.ts` - Reuse existing known-value helpers and guards.
-- `packages/compiler/src/utils/compilation.ts` or a new utility file - Safe bytecode-tail rewrite helpers.
-- `packages/compiler/src/instructionCompilers/mul.ts` - Identity, constant folding, and power-of-two shift replacement.
-- `packages/compiler/src/instructionCompilers/div.ts` - Identity and safe constant folding only.
-- `packages/compiler/src/instructionCompilers/add.ts` - Identity optimization and constant folding.
-- `packages/compiler/src/instructionCompilers/sub.ts` - Identity optimization and constant folding.
-- `packages/compiler/src/instructionCompilers/remainder.ts` - Optional constant folding.
-- `packages/compiler/src/instructionCompilers/*.test.ts` and `packages/compiler/tests/instructions/` - Bytecode and behavior coverage.
+- `compiler/packages/language-spec/src/semantic.ts` - Stack item bytecode provenance metadata.
+- `compiler/src/instructionCompilers/push/handlers/pushLiteral.ts` - Mark removable integer constants.
+- `compiler/src/utils/knownIntegerValue.ts` - Reuse existing known-value helpers and guards.
+- `compiler/src/utils/compilation.ts` or a new utility file - Safe bytecode-tail rewrite helpers.
+- `compiler/src/instructionCompilers/mul.ts` - Identity, constant folding, and power-of-two shift replacement.
+- `compiler/src/instructionCompilers/div.ts` - Identity and safe constant folding only.
+- `compiler/src/instructionCompilers/add.ts` - Identity optimization and constant folding.
+- `compiler/src/instructionCompilers/sub.ts` - Identity optimization and constant folding.
+- `compiler/src/instructionCompilers/remainder.ts` - Optional constant folding.
+- `compiler/src/instructionCompilers/*.test.ts` and `compiler/tests/instructions/` - Bytecode and behavior coverage.
 
 ## Risks & Considerations
 
@@ -108,8 +108,8 @@ Add a small codegen-level peephole optimization path for integer arithmetic.
 ## Related Items
 
 - **Supersedes remaining work from**: `docs/todos/archived/055-strength-reduction-compiler-optimization.md`
-- **Related**: `packages/compiler/docs/compiler-design.md` documents semantic normalization as the owner of compile-time folding.
-- **Related**: `packages/compiler/src/graphOptimizer.ts` sorts module dependencies, not arithmetic bytecode.
+- **Related**: `compiler/docs/compiler-design.md` documents semantic normalization as the owner of compile-time folding.
+- **Related**: `compiler/src/graphOptimizer.ts` sorts module dependencies, not arithmetic bytecode.
 - **Related**: `docs/todos/384-add-compiler-algorithmic-regression-metrics.md`
 
 ## References

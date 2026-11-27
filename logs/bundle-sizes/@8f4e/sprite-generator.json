@@ -1513,5 +1513,35 @@
 			"gzip": 950,
 			"brotli": 796
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-26T15:18:11.257Z",
+		"commit": "ef166e2a6cefe00f79b8d52a02bb491617a8b734",
+		"branch": "",
+		"releaseTag": "@8f4e/sprite-generator@3.1.0",
+		"packageName": "@8f4e/sprite-generator",
+		"projectName": "@8f4e/sprite-generator",
+		"version": "3.1.0",
+		"bytes": {
+			"raw": 2175,
+			"gzip": 950,
+			"brotli": 796
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-26T21:05:57.146Z",
+		"commit": "34816b5c7c8e485e834312a387abc8947e1487e8",
+		"branch": "",
+		"releaseTag": "@8f4e/sprite-generator@3.2.0",
+		"packageName": "@8f4e/sprite-generator",
+		"projectName": "@8f4e/sprite-generator",
+		"version": "3.2.0",
+		"bytes": {
+			"raw": 2175,
+			"gzip": 950,
+			"brotli": 796
+		}
 	}
 ]

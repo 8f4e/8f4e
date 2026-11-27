@@ -1,0 +1,5 @@
+{
+	"extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+	"compilerOptions": { "rootDir": ".", "lib": ["es2023", "webworker"], "types": ["node", "vitest"] },
+	"include": ["src/**/*.ts", "tests/**/*.ts"]
+}

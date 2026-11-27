@@ -1,0 +1,82 @@
+{
+	"name": "@8f4e/compiler-benchmarks",
+	"private": true,
+	"type": "module",
+	"description": "Compiler benchmark sources and measurement runners",
+	"exports": {
+		"./cases": "./cases",
+		"./cases/*.8f4e": "./cases/*.8f4e"
+	},
+	"devDependencies": {
+		"@8f4e/cli": "*",
+		"@8f4e/compiler": "*",
+		"@8f4e/compiler-wasm-utils": "*",
+		"@8f4e/constant-resolver": "*",
+		"@8f4e/language-spec": "*",
+		"@8f4e/memory-default-resolver": "*",
+		"@8f4e/memory-planner": "*",
+		"@8f4e/memory-reference-resolver": "*",
+		"@8f4e/semantic-reference-resolver": "*",
+		"@8f4e/semantic-utils": "*",
+		"@8f4e/stack-analyzer": "*",
+		"@8f4e/stdlib": "*",
+		"@8f4e/tokenizer": "*",
+		"@8f4e/wasm-codegen": "*"
+	},
+	"nx": {
+		"projectType": "library",
+		"targets": {
+			"log-bytecode-size": {
+				"cache": false,
+				"outputs": ["{workspaceRoot}/logs/bytecode-size"],
+				"dependsOn": [
+					{
+						"projects": ["@8f4e/cli"],
+						"target": "build",
+						"params": "ignore"
+					}
+				],
+				"options": { "cwd": "{workspaceRoot}" },
+				"command": "node {projectRoot}/scripts/log-bytecode-sizes.mjs"
+			},
+			"log-compiler-coverage-counts": {
+				"cache": false,
+				"outputs": ["{workspaceRoot}/logs/compiler-coverage-counts"],
+				"dependsOn": [
+					{
+						"projects": ["@8f4e/compiler"],
+						"target": "build",
+						"params": "ignore"
+					}
+				],
+				"options": { "cwd": "{workspaceRoot}" },
+				"command": "node --jitless {projectRoot}/scripts/log-compiler-coverage-counts.mjs"
+			},
+			"test": {
+				"executor": "nx:run-commands",
+				"dependsOn": [
+					{
+						"projects": ["@8f4e/compiler"],
+						"target": "build",
+						"params": "ignore"
+					}
+				],
+				"inputs": [
+					"default",
+					"^production",
+					{ "runtime": "node -p \"process.version + ':' + process.versions.v8\"" }
+				],
+				"options": {
+					"commands": [
+						{
+							"command": "node --test scripts/*.test.mjs",
+							"forwardAllArgs": false
+						}
+					]
+				}
+			},
+			"lint": { "command": "biome check scripts" }
+		},
+		"tags": ["type:tooling", "scope:compiler"]
+	}
+}

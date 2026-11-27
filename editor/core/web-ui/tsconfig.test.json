@@ -1,0 +1,8 @@
+{
+	"extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+	"compilerOptions": {
+		"rootDir": ".",
+		"types": ["vitest/globals", "@vitest/browser/matchers", "node"]
+	},
+	"include": ["src/**/*.ts", "screenshot-tests/**/*.ts"]
+}

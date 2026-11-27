@@ -2,29 +2,48 @@
 
 ## Project Map
 
-- [Compiler](packages/compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
-- [Editor](packages/editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
-  editor compositions. The editor website is the thin host for the default composition.
-- The [product website](packages/8f4e-website/README.md) hosts the landing demos, example gallery and compiler fixture
+- [Compiler](compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
+- The [CLI](apps/cli/README.md) exposes the compiler and execution tooling as command-line commands.
+- [Editor](editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
+  editor compositions. The [editor web app](apps/editor-webapp/AGENTS.md) is the thin host for the default composition.
+- The [product website](apps/8f4e-website/README.md) hosts the landing demos, example gallery and compiler fixture
   gallery. Keep full gallery catalogs out of the homepage build. Ship project sources as assets.
-- [Examples](packages/examples) ships project and module source. Consumers that discover these files depend on
+- [Examples](examples) ships project and module source. Consumers that discover these files depend on
   `@8f4e/examples` so generators and source changes participate in Nx builds and watches.
-- [Vite source collections](packages/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
+- [Example integration tests](examples/tests/README.md) own cross-package example regressions and depend on the CLI,
+  compiler and source packages without pulling those consumers into the examples asset build. [Compiler benchmarks](tools/compiler-benchmarks/README.md)
+  owns benchmark cases and measurement runners; keep both validation projects out of Nx releases.
+- [Release tooling](tools/release/README.md) owns repository-wide release metrics and validation runners.
+  Resolve measured packages by name rather than hardcoded repository paths.
+- [Vite source collections](tools/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
   selection and interpretation belong to consumers.
-- [Linux runtime](packages/runtime-linux/AGENTS.md) owns native JACK playback. The separate
-  [runtime command tool](tools/runtime-command/README.md) translates compiler metadata into numeric launch arguments.
-- [Daisy runtime](packages/runtime-daisy/README.md) loads compiled instruments from microSD on the Daisy Field.
+- [Linux runtime](apps/runtime-linux/AGENTS.md) owns native JACK playback. The separate
+  [runtime command tool](apps/runtime-command/README.md) translates compiler metadata into numeric launch arguments.
+- [Daisy runtime](apps/runtime-daisy/README.md) loads compiled instruments from microSD on the Daisy Field.
 - The compiler ABI imports shared `host.memory` with explicit limits. Hosts allocate matching shared memory.
 
 ## Build and Development
 
 - Use `nvm use` for the pinned Node version. Run Nx tasks from the repository root, for example
-  `npx nx run @8f4e/editor-website:dev` (port 3000) or `npx nx run @8f4e/8f4e-website:dev` (port 3001).
+  `npx nx run @8f4e/editor-webapp:dev` (port 3000) or `npx nx run @8f4e/8f4e-website:dev` (port 3001).
   Preserve COOP/COEP where shared memory is used.
 - Use `npx nx show project <project>` to find available targets. Use Nx builds so workspace aliases resolve to
   built exports, including when changing an API used by a Vite consumer.
+- Keep package-owned Nx configuration in `package.json` under `nx`, so the npm package name is the project identity.
+  Use `project.json` for non-npm projects and custom project-level metadata that Nx does not preserve in package
+  manifests (the stdlib metrics source directory). Keep exceptional target options local.
+- Use Nx's `command` shorthand for single-command targets. Inherit conventional working and build output directories,
+  lint, typecheck and screenshot defaults; declare an empty target only when its shared command fits the project.
+- Tests inherit the `^build` prerequisite. Only declare a `test.dependsOn` override when the target needs a different
+  dependency sequence.
+- Omit redundant Nx `sourceRoot` declarations; derive conventional `src/` directories from the discovered project root
+  and run commands from `{projectRoot}`. Only nonstandard release-metric source directories require project-relative
+  `metadata.metrics.sourceDirectory`. The standalone Glugglugglug submodule owns its own project metadata.
 - Each package builds into its own `dist/`. Clear it before the first emitter (`rm -rf dist && tsc` for plain
   TypeScript packages). Mixed builds clean once so later steps preserve earlier outputs.
+- Use the shared TypeScript presets from `@8f4e/config` for standard library layouts and test type checking.
+  They resolve paths relative to the consuming config using `${configDir}`. Keep only project-specific overrides locally;
+  use the layout-independent base preset for nonstandard projects.
 - Production builds and generators use `production` inputs. Tests and type checks retain their own test sources
   and consume production inputs from dependencies.
 - Exclude test-only paths narrowly. Keep shipped fixtures, catalogs, stdlib, bundled modules, workers and
@@ -35,11 +54,16 @@
 ## Code and Tests
 
 - Use TypeScript ES modules, kebab-case package directories and `@8f4e/<package>` imports across workspace packages.
-- Use Biome for formatting, linting and import organization (`npx biome check --write <files>`).
+- Use Biome for formatting, linting and import organization. Repository-owned Nx `lint` targets, CI lint checks and
+  staged-file checks are read-only; explicitly request fixes with `npx biome check --write <files>`. The independent
+  Glugglugglug submodule owns its lint configuration and is excluded from parent lint checks.
 - Express repository-owned API contracts with types and JSDoc. Trust callers to satisfy those contracts.
 - Use Vitest via Nx. Keep unit tests in `__tests__/` or colocated `*.test.ts` and `*.spec.ts` files unless local
   guidance specifies another location. Use shared helpers from `@8f4e/config/vitest`. Glugglugglug is a separate
   submodule with its own configuration.
+- Test coverage is on demand only. Use `npx nx test <project> --coverage --skip-nx-cache` when explicitly requested;
+  keep reports in package-local `coverage/` using the shared Vitest defaults. Do not enable coverage in routine
+  tests, CI, or releases, cache its artifacts with Nx, or maintain historical test coverage logs.
 - Track screenshot baselines. Vitest failure artifacts go in ignored `.vitest-attachments/`.
 
 ## Commits, Pull Requests and Releases

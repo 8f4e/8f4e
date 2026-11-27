@@ -1,0 +1,10 @@
+{
+	"extends": "@8f4e/config/tsconfig.library.json",
+	"compilerOptions": {
+		"target": "esnext",
+		"lib": ["esnext", "dom", "dom.iterable"],
+		"allowImportingTsExtensions": false,
+		"types": []
+	},
+	"exclude": ["node_modules", "src/**/*.test.ts"]
+}

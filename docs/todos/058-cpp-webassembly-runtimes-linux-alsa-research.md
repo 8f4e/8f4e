@@ -135,8 +135,8 @@ Alternative approaches considered:
 ## Affected Components
 
 - `packages/runtime-*` - New LinuxALSA runtime package will be created
-- `packages/compiler` - May need modifications for C/C++ runtime integration
-- `packages/editor` - Runtime selection UI will need LinuxALSA option
+- `compiler` - May need modifications for C/C++ runtime integration
+- `editor` - Runtime selection UI will need LinuxALSA option
 - `src/examples` - Example applications demonstrating native Linux capabilities
 - `docs/` - Documentation for native runtime setup and deployment
 

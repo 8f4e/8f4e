@@ -1,0 +1,645 @@
+import { execFile } from 'child_process';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { promisify } from 'util';
+
+import { describe, expect, it } from 'vitest';
+import wabt from 'wabt';
+
+const execFileAsync = promisify(execFile);
+
+const testDir = path.dirname(fileURLToPath(import.meta.url));
+const packageRoot = path.resolve(testDir, '..');
+const fixturePath = path.join(testDir, 'fixtures', 'minimal.8f4e');
+const runtimeFixturePath = path.join(testDir, 'fixtures', 'runtimeInspect.8f4e');
+const testPassingFixturePath = path.join(testDir, 'fixtures', 'testPassing.8f4e');
+const testFailingFixturePath = path.join(testDir, 'fixtures', 'testFailing.8f4e');
+const stdlibFixturePath = path.join(testDir, 'fixtures', 'stdlib.8f4e');
+const moduleGlob = path.relative(packageRoot, path.join(testDir, 'fixtures', 'module-glob', '*.8f4em'));
+const runtimeBytesPath = path.join(testDir, 'fixtures', 'runtimeBytes.bin');
+const tmpDir = path.join(testDir, '.tmp');
+const wasmPath = path.join(tmpDir, 'audioBuffer.wasm');
+const runOutPath = path.join(tmpDir, 'runtimeInspect.output.json');
+const captureOutPath = path.join(tmpDir, 'runtimeInspect.capture.bin');
+const formatOutPath = path.join(tmpDir, 'formatted.8f4em');
+
+function execCli(args: string[]) {
+	return execFileAsync(process.execPath, [path.join(packageRoot, 'bin', 'cli.js'), ...args], {
+		cwd: packageRoot,
+	});
+}
+
+describe('cli', () => {
+	it('writes wasm bytes when compile --wasm-output is provided', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		await execCli(['compile', fixturePath, '--wasm-output', wasmPath]);
+
+		const wasmBytes = await fs.readFile(wasmPath);
+
+		expect(wasmBytes.length).toBeGreaterThan(8);
+		expect(wasmBytes.subarray(0, 4)).toEqual(Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+	});
+
+	it('fails when compile is called without any output flag', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+
+		await expect(execCli(['compile', fixturePath])).rejects.toThrow('Command failed');
+	});
+
+	it('controls function inlining in the emitted Wasm', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'inlining.8f4e');
+		const output = path.join(tmpDir, 'inlining.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function leaf
+push 7
+add 1
+functionEnd int
+
+function run
+#export
+call leaf
+call leaf
+add
+functionEnd int
+
+entry main
+module main
+moduleEnd
+entryEnd
+`
+		);
+		const wabtApi = await wabt();
+		async function compileAndCountRunCalls(...flags: string[]) {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			const wasm = await fs.readFile(output);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(wasm, { host: { memory } });
+			expect((instance.exports.run as () => number)()).toBe(16);
+
+			const module = wabtApi.readWasm(wasm, { threads: true });
+			try {
+				module.generateNames();
+				module.applyNames();
+				const wat = module.toText({ foldExprs: false });
+				const run = wat.split(/^ {2}(?=\()/m).find(body => body.startsWith('(func $run '));
+				if (!run) throw new Error('Missing exported run function body');
+				return (run.match(/\bcall\s/g) ?? []).length;
+			} finally {
+				module.destroy();
+			}
+		}
+
+		expect(await compileAndCountRunCalls()).toBe(2);
+		expect(await compileAndCountRunCalls('--max-inline-caller-growth', '2')).toBe(2);
+		expect(await compileAndCountRunCalls('--inline-functions')).toBe(0);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-caller-growth', '2')).toBe(1);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-expansion-operations', '0')).toBe(2);
+		expect(
+			await compileAndCountRunCalls(
+				'--inline-functions',
+				'--max-inline-expansion-operations',
+				'0',
+				'--max-inline-caller-growth',
+				'2'
+			)
+		).toBe(2);
+	});
+
+	it.each([
+		[['--max-inline-expansion-operations'], 'Missing value for --max-inline-expansion-operations'],
+		[['--max-inline-expansion-operations', '-1'], '--max-inline-expansion-operations expects a non-negative integer'],
+		[['--max-inline-caller-growth', '2.5'], '--max-inline-caller-growth expects a non-negative integer'],
+		[['--max-inline-caller-growth', '9007199254740993'], '--max-inline-caller-growth expects a non-negative integer'],
+	])('rejects invalid inlining flags %j', async (flags, message) => {
+		await expect(execCli(['compile', fixturePath, '--wasm-output', wasmPath, ...flags])).rejects.toMatchObject({
+			stderr: expect.stringContaining(message),
+		});
+	});
+
+	it('opts in to local simplification after optional inlining', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'simplify-wasm-locals.8f4e');
+		const output = path.join(tmpDir, 'simplify-wasm-locals.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function bump
+param int value
+push value
+add 1
+functionEnd int
+
+function run
+#export
+param int value
+local int result
+local int scratch
+call bump value
+localSet result
+push result
+push value
+localSet scratch
+push result
+add
+push scratch
+add
+functionEnd int
+
+entry main
+module root
+moduleEnd
+entryEnd
+`
+		);
+		const wabtApi = await wabt();
+		const countTees = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			const wasm = await fs.readFile(output);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(wasm, { host: { memory } });
+			expect((instance.exports.run as (value: number) => number)(7)).toBe(23);
+
+			const module = wabtApi.readWasm(wasm, { threads: true });
+			try {
+				return (module.toText({ foldExprs: false }).match(/\blocal\.tee\b/g) ?? []).length;
+			} finally {
+				module.destroy();
+			}
+		};
+
+		expect(await countTees()).toBe(0);
+		expect(await countTees('--simplify-wasm-locals')).toBe(1);
+		expect(await countTees('--inline-functions', '--simplify-wasm-locals')).toBe(2);
+	});
+
+	it('can disable Wasm pruning while leaving inlining enabled', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'pruning.8f4e');
+		const output = path.join(tmpDir, 'pruning.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function unused
+#import unused
+functionEnd
+
+entry main
+module root
+moduleEnd
+entryEnd
+`
+		);
+		const imports = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			return WebAssembly.Module.imports(new WebAssembly.Module(await fs.readFile(output))).map(({ name }) => name);
+		};
+
+		expect(await imports()).toEqual(['memory']);
+		expect(await imports('--inline-functions', '--no-wasm-pruning')).toEqual(['unused', 'memory']);
+	});
+
+	it('can disable compiler-generated memory guards in functions and modules', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'memory-guards.8f4e');
+		const output = path.join(tmpDir, 'memory-guards.wasm');
+		const accessBodies = {
+			readInt: 'param int address\npush address\nload\nfunctionEnd int',
+			readFloat: 'param int address\npush address\nloadFloat\nfunctionEnd float',
+			readPointer: 'param int* address\npush *address\nfunctionEnd int',
+			writeInt: 'param int address\npush address\npush 42\nstore\nfunctionEnd',
+			writeByte: 'param int address\npush 42\npush address\nstoreBytes 1\nfunctionEnd',
+			copyMemory: 'param int address\npush address\npush 0\nmemoryCopy 4\nfunctionEnd',
+		};
+		const functions = Object.entries(accessBodies)
+			.map(([name, body]) => `function ${name}\n#export\n#impure\n${body}\n`)
+			.join('\n');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+${functions}
+entry main
+module guardProbe
+push -1
+load
+drop
+moduleEnd
+entryEnd
+`
+		);
+		const compile = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(await fs.readFile(output), { host: { memory } });
+			return instance.exports;
+		};
+
+		const guarded = await compile();
+		const unguarded = await compile('--no-memory-guards');
+		for (const name of [...Object.keys(accessBodies), 'main']) {
+			expect(() => (guarded[name] as (address: number) => void)(-1)).not.toThrow();
+			expect(() => (unguarded[name] as (address: number) => void)(-1)).toThrow(WebAssembly.RuntimeError);
+		}
+	});
+
+	it('exports compiler memory information and executable shared-memory WASM', async () => {
+		const outputWasm = path.join(tmpDir, 'native.wasm');
+		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');
+		await execCli(['compile', runtimeFixturePath, '--wasm-output', outputWasm, '--memory-output', outputMemory]);
+		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
+		const pages = Math.max(1, Math.ceil(info.requiredMemoryBytes / 65536));
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+		const { instance } = await WebAssembly.instantiate(await fs.readFile(outputWasm), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		(instance.exports.main as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(info.memoryPlan.modules.main.memory.counter.byteAddress, true)).toBe(1);
+		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
+	});
+
+	it('replaces root env source values before compilation', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'env.8f4e');
+		const outputWasm = path.join(tmpDir, 'env.wasm');
+		const outputMemory = path.join(tmpDir, 'env.json');
+		const source = `8f4e/v1
+constants env
+const SAMPLE_RATE
+- 48000 ; original rate
+; the output rate is derived from the env value
+const HALF_RATE SAMPLE_RATE/2
+const AUDIO_BUFFER_SIZE 256/2
+const GAIN 1
+constantsEnd
+entry main
+group voice
+pass env
+entry main
+module audioout
+use env
+float[] buffer AUDIO_BUFFER_SIZE
+int rate HALF_RATE
+float gain GAIN
+moduleEnd
+entryEnd
+groupEnd
+group local
+constants env
+const SAMPLE_RATE 24000
+constantsEnd
+entry main
+module audioout
+use env
+int rate SAMPLE_RATE
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+`;
+		await fs.writeFile(input, source);
+		await execCli([
+			'compile',
+			input,
+			'--env',
+			'SAMPLE_RATE=64000/2',
+			'--env',
+			'AUDIO_BUFFER_SIZE=64',
+			'--env',
+			'GAIN=2.0',
+			'--wasm-output',
+			outputWasm,
+			'--memory-output',
+			outputMemory,
+		]);
+		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
+		expect(Object.keys(info).sort()).toEqual(['memoryPlan', 'requiredMemoryBytes']);
+		const voice = info.memoryPlan.modules['voice/audioout'].memory;
+		const local = info.memoryPlan.modules['local/audioout'].memory;
+		expect(voice.buffer.numberOfElements).toBe(64);
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+		const { instance } = await WebAssembly.instantiate(await fs.readFile(outputWasm), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(voice.rate.byteAddress, true)).toBe(16000);
+		expect(view.getFloat32(voice.gain.byteAddress, true)).toBe(2);
+		expect(view.getInt32(local.rate.byteAddress, true)).toBe(24000);
+		expect(await fs.readFile(input, 'utf8')).toBe(source);
+	});
+
+	it.each([
+		['missing-env', 'constants audio\nconst RATE 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
+		['missing-name', 'constants env\nconst OTHER 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
+	])('rejects invalid env overrides (%s)', async (name, body, override, message) => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, `env-${name}.8f4e`);
+		const output = path.join(tmpDir, `env-${name}.wasm`);
+		await fs.writeFile(input, `8f4e/v1\n${body}\n`);
+		await expect(execCli(['compile', input, '--env', override, '--wasm-output', output])).rejects.toMatchObject({
+			stderr: expect.stringContaining(message),
+		});
+	});
+
+	it('rejects missing output paths and output collisions', async () => {
+		await expect(execCli(['compile', fixturePath, '--wasm-output', '--memory-output'])).rejects.toMatchObject({
+			stderr: expect.stringContaining('Missing path for --wasm-output'),
+		});
+		await expect(
+			execCli(['compile', fixturePath, '--wasm-output', wasmPath, '--memory-output', wasmPath])
+		).rejects.toMatchObject({ stderr: expect.stringContaining('must be different') });
+		await expect(execCli(['compile', fixturePath, '--wasm-output', fixturePath])).rejects.toMatchObject({
+			stderr: expect.stringContaining('must not overwrite'),
+		});
+	});
+
+	it('rejects non-.8f4e input files for compile', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const invalidProjectPath = path.join(tmpDir, 'invalid-project.txt');
+		await fs.writeFile(invalidProjectPath, 'module main\nmoduleEnd\n');
+
+		await expect(execCli(['compile', invalidProjectPath, '--wasm-output', wasmPath])).rejects.toThrow('Command failed');
+	});
+
+	it('formats long semicolon comments to stdout', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const formatInputPath = path.join(tmpDir, 'format-stdout.8f4em');
+		await fs.writeFile(
+			formatInputPath,
+			[
+				'module formatFixture',
+				'; This comment should wrap into multiple lines when width is set low enough',
+				'load ; This trailing comment should also wrap after the instruction prefix',
+				'push "; this is a string literal, not a comment delimiter"',
+				'; @custom this directive-shaped comment should stay on one long line',
+				'moduleEnd',
+			].join('\n') + '\n'
+		);
+
+		const { stdout } = await execCli(['format', formatInputPath, '--comment-width', '36']);
+
+		expect(stdout).toBe(
+			[
+				'module formatFixture',
+				'; This comment should wrap into',
+				'; multiple lines when width is set',
+				'; low enough',
+				'load ; This trailing comment should',
+				'     ; also wrap after the',
+				'     ; instruction prefix',
+				'push "; this is a string literal, not a comment delimiter"',
+				'; @custom this directive-shaped comment should stay on one long line',
+				'moduleEnd',
+			].join('\n') + '\n'
+		);
+	});
+
+	it('uses a 32 character default format comment width', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const formatInputPath = path.join(tmpDir, 'format-default-width.8f4em');
+		await fs.writeFile(
+			formatInputPath,
+			'; This comment should wrap using the default formatter width of thirty two characters\n'
+		);
+
+		const { stdout } = await execCli(['format', formatInputPath]);
+
+		expect(stdout).toBe(
+			['; This comment should wrap using', '; the default formatter width of', '; thirty two characters'].join('\n') +
+				'\n'
+		);
+	});
+
+	it('writes formatted code to an output file', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const formatInputPath = path.join(tmpDir, 'format-out.8f4em');
+		await fs.writeFile(formatInputPath, '; This comment should wrap into a small output file\n');
+
+		await execCli(['format', formatInputPath, '--comment-width', '24', '--out', formatOutPath]);
+
+		expect(await fs.readFile(formatOutPath, 'utf8')).toBe(
+			['; This comment should', '; wrap into a small', '; output file'].join('\n') + '\n'
+		);
+	});
+
+	it('formats code in place with --write', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const formatInputPath = path.join(tmpDir, 'format-write.8f4em');
+		await fs.writeFile(formatInputPath, '; This comment should wrap when the file is written in place\n');
+
+		await execCli(['format', formatInputPath, '--comment-width', '28', '--write']);
+
+		expect(await fs.readFile(formatInputPath, 'utf8')).toBe(
+			['; This comment should wrap', '; when the file is written', '; in place'].join('\n') + '\n'
+		);
+	});
+
+	it('runs cycles, applies sets, and dumps requested ids as JSON', async () => {
+		const { stdout } = await execCli([
+			'run',
+			runtimeFixturePath,
+			'--cycles',
+			'3',
+			'--set',
+			'gain=1.25',
+			'--set-json',
+			'buffer=[1,2,3,4]',
+			'--dump',
+			'counter',
+			'--dump',
+			'gain',
+			'--dump',
+			'buffer',
+		]);
+
+		expect(JSON.parse(stdout)).toEqual({
+			counter: 3,
+			gain: 1.25,
+			buffer: [1, 2, 3, 4],
+		});
+	});
+
+	it('writes run output to a file when --out is provided', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		await execCli(['run', runtimeFixturePath, '--cycles', '2', '--dump', 'counter', '--out', runOutPath]);
+
+		const raw = await fs.readFile(runOutPath, 'utf8');
+		expect(JSON.parse(raw)).toEqual({
+			counter: 2,
+		});
+	});
+
+	it('loads raw file bytes directly into a target buffer', async () => {
+		const { stdout } = await execCli([
+			'run',
+			runtimeFixturePath,
+			'--load-file',
+			'buffer=' + runtimeBytesPath,
+			'--dump',
+			'buffer',
+		]);
+
+		expect(JSON.parse(stdout)).toEqual({
+			buffer: [1, 2, 3, -1],
+		});
+	});
+
+	it('dumps unsigned narrow integer arrays without signed sign-extension', async () => {
+		const { stdout } = await execCli([
+			'run',
+			runtimeFixturePath,
+			'--dump',
+			'unsignedBytes',
+			'--dump',
+			'unsignedShorts',
+		]);
+
+		expect(JSON.parse(stdout)).toEqual({
+			unsignedBytes: [0, 255],
+			unsignedShorts: [0, 65535],
+		});
+	});
+
+	it('fails when run is called without any --dump', async () => {
+		await expect(execCli(['run', runtimeFixturePath, '--cycles', '2'])).rejects.toThrow('Command failed');
+	});
+
+	it('runs tests declared in a project file', async () => {
+		const { stdout } = await execCli(['test', testPassingFixturePath]);
+
+		expect(stdout).toBe('Ran 1 assertion.\n');
+	});
+
+	it('reports assertion failures from project tests', async () => {
+		await expect(execCli(['test', testFailingFixturePath])).rejects.toMatchObject({
+			stderr: expect.stringContaining(
+				'assertEqual #0 expected 4, received 3 at module addFails, block line 5 (site 0)'
+			),
+		});
+	});
+
+	it('reports the original helper assertion site on repeated loop failures', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const helperTestPath = path.join(tmpDir, 'helperTest.8f4e');
+		await fs.writeFile(
+			helperTestPath,
+			`8f4e/v1
+entry test
+module driver
+push 0
+if
+push 99
+assertEqual 99
+ifEnd
+loop 2
+call helper
+loopEnd
+moduleEnd
+entryEnd
+function helper
+push
+- 7 ; continued argument
+assertEqual 8
+functionEnd`
+		);
+		await expect(execCli(['test', helperTestPath])).rejects.toMatchObject({
+			stderr: expect.stringContaining(
+				[
+					'2 assertions failed:',
+					'  assertEqual #0 expected 8, received 7 at function helper, block line 4 (site 1)',
+					'  assertEqual #1 expected 8, received 7 at function helper, block line 4 (site 1)',
+				].join('\n')
+			),
+		});
+	});
+
+	it('runs a project with only an exported test function', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const functionTestPath = path.join(tmpDir, 'functionTest.8f4e');
+		await fs.writeFile(
+			functionTestPath,
+			`8f4e/v1
+function test
+#export
+push 3
+assertEqual 3
+functionEnd`
+		);
+		const { stdout } = await execCli(['test', functionTestPath]);
+		expect(stdout).toBe('Ran 1 assertion.\n');
+	});
+
+	it('runs tests from an explicit test entry', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const groupedTestPath = path.join(tmpDir, 'groupedTest.8f4e');
+		await fs.writeFile(
+			groupedTestPath,
+			['8f4e/v1', '', 'entry test', 'module groupedTest', 'push 1', 'assertEqual 1', 'moduleEnd', 'entryEnd'].join('\n')
+		);
+
+		const { stdout } = await execCli(['test', groupedTestPath]);
+
+		expect(stdout).toBe('Ran 1 assertion.\n');
+	});
+
+	it('runs embedded tests declared in a stdlib fixture file', async () => {
+		const { stdout } = await execCli(['test', stdlibFixturePath]);
+
+		expect(stdout).toBe('Ran 3 assertions.\n');
+	});
+
+	it('runs tests with ordinary dependency blocks', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const dependencyTestPath = path.join(tmpDir, 'dependencyTest.8f4e');
+		await fs.writeFile(
+			dependencyTestPath,
+			[
+				'8f4e/v1',
+				'',
+				'entry test',
+				'module target',
+				'int* ptr &dependency:value',
+				'push *ptr',
+				'assertEqual 42',
+				'moduleEnd',
+				'',
+				'module dependency',
+				'int value 42',
+				'moduleEnd',
+				'entryEnd',
+			].join('\n')
+		);
+
+		const { stdout } = await execCli(['test', dependencyTestPath]);
+
+		expect(stdout).toBe('Ran 1 assertion.\n');
+	});
+
+	it('runs test files matched by a glob and skips files without test entries', async () => {
+		const { stdout } = await execCli(['test', moduleGlob]);
+
+		expect(stdout).toBe('No tests found.\n');
+	});
+
+	it('captures raw buffer bytes across repeated main windows', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		await execCli([
+			'capture',
+			runtimeFixturePath,
+			'--buffer',
+			'buffer',
+			'--cycles',
+			'2',
+			'--repeat',
+			'3',
+			'--set-json',
+			'buffer=[1,2,3,-1]',
+			'--out',
+			captureOutPath,
+		]);
+
+		const bytes = await fs.readFile(captureOutPath);
+		expect([...bytes]).toEqual([1, 2, 3, 255, 1, 2, 3, 255, 1, 2, 3, 255]);
+	});
+});

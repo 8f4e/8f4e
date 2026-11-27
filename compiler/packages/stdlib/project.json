@@ -1,0 +1,10 @@
+{
+	"name": "@8f4e/stdlib",
+	"metadata": { "metrics": { "sourceDirectory": "std" } },
+	"projectType": "library",
+	"targets": {
+		"test": { "command": "vitest run" },
+		"typecheck": {}
+	},
+	"tags": ["type:library", "scope:core"]
+}

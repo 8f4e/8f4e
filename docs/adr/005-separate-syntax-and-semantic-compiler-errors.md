@@ -15,8 +15,8 @@ These failures have different inputs, different ownership, and different remedia
 
 The repository already encodes this distinction in:
 
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts`
-- `packages/compiler/packages/diagnostics/src/semanticError.ts`
+- `compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts`
+- `compiler/packages/diagnostics/src/semanticError.ts`
 - repository guidance in `AGENTS.md`
 
 ## Decision

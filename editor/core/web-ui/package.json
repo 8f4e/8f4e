@@ -1,0 +1,73 @@
+{
+  "name": "@8f4e/web-ui",
+  "version": "7.2.1",
+  "private": true,
+  "description": "8f4e web UI package - canvas renderer for the editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/editor-palette": "*",
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-types": "*",
+    "@8f4e/sprite-generator": "*",
+    "@8f4e/state-manager": "*",
+    "glugglugglug": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/web-ui-testing": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@vitest/browser": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "playwright": "1.65.1",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "dev": {
+        "command": "concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": {
+        "executor": "@nx/vitest:test",
+        "dependsOn": ["build"]
+      },
+      "typecheck": {
+        "dependsOn": ["build"]
+      },
+      "test:screenshot": {},
+      "test:screenshot:ui": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --browser.headless=false --browser.ui=true"
+      },
+      "test:screenshot:update": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --run --update"
+      },
+      "test:screenshot:headed": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --run --browser.headless=false"
+      }
+    },
+    "tags": ["type:library", "scope:ui"]
+  }
+}

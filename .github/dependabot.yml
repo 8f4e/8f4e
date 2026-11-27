@@ -5,7 +5,14 @@ updates:
     # Match every workspace manifest so security alerts use the same group.
     directories:
       - "/"
-      - "/packages/**"
+      - "/apps/**"
+      - "/compiler"
+      - "/compiler/packages/**"
+      - "/editor/**"
+      - "/examples"
+      - "/tools/config"
+      - "/tools/test-runner"
+      - "/tools/vite-plugin-sources"
       - "/tools/project-preview"
     schedule:
       interval: "weekly"

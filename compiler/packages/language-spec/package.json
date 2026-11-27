@@ -1,0 +1,41 @@
+{
+  "name": "@8f4e/language-spec",
+  "version": "9.2.1",
+  "private": true,
+  "description": "Shared public language spec and contracts for 8f4e",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/compiler-wasm-utils": "*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "test": { "executor": "@nx/vitest:test" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:core"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@8f4e/editor-core",
+  "version": "15.2.1",
+  "private": true,
+  "description": "8f4e minimal editor package",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./docs": "./docs",
+    "./docs/*.md": "./docs/*.md"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-types": "*",
+    "@8f4e/state-manager": "*",
+    "@8f4e/web-ui": "*",
+    "@8f4e/language-spec": "*"
+  },
+  "devDependencies": {
+    "@8f4e/web-ui-testing": "*",
+    "@8f4e/editor-palette": "*",
+    "@8f4e/editor-state-testing": "*",
+    "vite": "7.3.8"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "lint": {},
+      "dev": {
+        "command": "concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": { "command": "vitest run --config vitest.config.ts" },
+      "typecheck": {},
+      "test:screenshot": {},
+      "test:screenshot:update": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --run --update"
+      }
+    },
+    "tags": ["type:library", "scope:ui"]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "@8f4e/test-runner",
+  "version": "0.4.8",
+  "private": true,
+  "description": "Shared assertion execution and source reporting for 8f4e tests",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/language-spec": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/project-preparser": "*",
+    "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "test": { "executor": "@nx/vitest:test" },
+      "lint": { "command": "biome check src vite.config.ts vitest.config.ts" },
+      "typecheck": {}
+    },
+    "tags": ["type:library", "scope:testing"]
+  }
+}

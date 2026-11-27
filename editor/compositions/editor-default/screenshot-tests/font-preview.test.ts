@@ -1,0 +1,106 @@
+import { parseProjectSource } from '@8f4e/compiler';
+import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
+import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { serializeToProject } from '@8f4e/editor-state';
+import { FONT_NAMES } from '@8f4e/sprite-generator';
+import { Engine } from 'glugglugglug';
+import { expect, test, vi } from 'vitest';
+
+test('previews fonts through the default composition without changing saved source', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 640;
+	canvas.height = 256;
+	document.body.append(canvas);
+	const sourceFont = 'spleen16x32';
+	const project = parseProjectSource(
+		`8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote settings\n; @mode edit\n; @pos 3 3\n; @config font ${sourceFont}\nSample text\nnoteEnd`
+	);
+	let editor: Editor | undefined;
+	let context!: EditorPluginContext;
+	try {
+		const plugins = createDefaultEditorPlugins({
+			canvas,
+			storage: { getItem: () => null, setItem: () => {} } as Storage,
+			storageKey: 'font-preview-test',
+			renderFrame: () => editor!.renderFrame(),
+			getMemory: () => null,
+			writeMemory: () => {},
+			getCodeBuffer: () => new Uint8Array(),
+			getAssertionSites: () => undefined,
+		});
+		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
+			initialProject: project,
+			plugins: [
+				...plugins,
+				{
+					id: 'test-context',
+					setup: services => {
+						context = services;
+						return () => {};
+					},
+				},
+			],
+		});
+		await vi.dynamicImportSettled();
+		editor.pauseRendering();
+		const source = serializeToProject(editor.state);
+		const revision = editor.editing.getRevision();
+		const key = (key: string) => {
+			const event = new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true });
+			canvas.dispatchEvent(event);
+			return event;
+		};
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
+		expect(key('+').defaultPrevented).toBe(true);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
+		for (let index = FONT_NAMES.indexOf(sourceFont); index >= 0; index--) {
+			expect(key('-').defaultPrevented).toBe(true);
+		}
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(4);
+		expect(editor.state.viewport.hGrid).toBe(6);
+		for (let index = 0; index < FONT_NAMES.indexOf('x11miscfixed6x10'); index++) {
+			expect(key('+').defaultPrevented).toBe(true);
+		}
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
+		expect(editor.state.viewport.hGrid).toBe(10);
+		expect(serializeToProject(editor.state)).toEqual(source);
+		expect(editor.editing.getRevision()).toBe(revision);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-preview');
+		const block = editor.state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
+		editor.editing.applyEdits({
+			expectedRevision: revision,
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(block),
+					code: block.code.map(line => line.replace(sourceFont, 'terminus10x18')),
+				},
+			],
+		});
+		expect(editor.state.editorConfig.font).toBe('terminus10x18');
+		expect(editor.state.appearance.fontOverride).toBe('x11miscfixed6x10');
+		expect(editor.state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
+		context.events.dispatch('loadProject', { project });
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
+		expect(editor.state.editorConfig.font).toBe(sourceFont);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
+		editor.resize(240, 400);
+		context.store.set('editorConfig.font', 'departuremono7x14');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(14);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-credits-portrait');
+		editor.resize(240, 256);
+		context.store.set('editorConfig.font', 'spleen16x32');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(32);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-characters-small-viewport');
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+	}
+});

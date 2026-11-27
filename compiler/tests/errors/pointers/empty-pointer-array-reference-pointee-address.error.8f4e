@@ -1,0 +1,9 @@
+8f4e/v1
+entry main
+module emptyPointerArrayReference
+int*[] pointers 0
+int*& slot &pointers
+push &*slot
+drop
+moduleEnd
+entryEnd

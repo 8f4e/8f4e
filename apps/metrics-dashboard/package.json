@@ -1,0 +1,44 @@
+{
+  "name": "@8f4e/metrics-dashboard",
+  "version": "3.1.0",
+  "private": true,
+  "description": "Local dashboard for 8f4e release metrics",
+  "type": "module",
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@nx/devkit": "23.3.2",
+    "@observablehq/plot": "0.6.19",
+    "vite": "7.3.8",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "inputs": [
+          "production",
+          "^production",
+          "{workspaceRoot}/bundle-size.config.json",
+          "{workspaceRoot}/logs/bundle-sizes/**/*",
+          "{workspaceRoot}/logs/bytecode-size/**/*",
+          "{workspaceRoot}/logs/compiler-coverage-counts/**/*",
+          "{workspaceRoot}/logs/tsdoc-coverage/**/*"
+        ],
+        "command": "vite build"
+      },
+      "test": { "command": "vitest run --config vitest.config.ts" },
+      "lint": { "command": "biome check src vite.config.ts vitest.config.ts" },
+      "serve": {
+        "options": { "cwd": "{projectRoot}" },
+        "command": "vite --host 0.0.0.0 --port 3002"
+      },
+      "preview": {
+        "options": { "cwd": "{projectRoot}" },
+        "dependsOn": ["build"],
+        "command": "vite preview --host 0.0.0.0 --port 3002"
+      },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:application", "scope:tooling"]
+  }
+}

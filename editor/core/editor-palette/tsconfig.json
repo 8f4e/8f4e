@@ -1,0 +1,5 @@
+{
+	"extends": "@8f4e/config/tsconfig.library.json",
+	"compilerOptions": { "lib": ["es2023"], "types": [] },
+	"exclude": ["src/**/*.test.ts"]
+}

@@ -67,7 +67,7 @@ Key requirements:
 
 - `npx nx run @8f4e/editor-state:test`
 - `npx nx run @8f4e/web-ui:test`
-- `rg -n "@url|https://|window.open|noopener|noreferrer" packages/editor docs`
+- `rg -n "@url|https://|window.open|noopener|noreferrer" editor docs`
 
 ## Success Criteria
 
@@ -80,9 +80,9 @@ Key requirements:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/directives/` - URL directive parsing and graphic-data integration
-- `packages/editor/packages/editor-core/packages/web-ui/src/drawers/codeBlocks` - URL rendering and interaction handling
-- `packages/editor/docs/editor-directives.md` - directive documentation
+- `editor/core/editor-state/src/directives/` - URL directive parsing and graphic-data integration
+- `editor/core/web-ui/src/drawers/codeBlocks` - URL rendering and interaction handling
+- `editor/docs/editor-directives.md` - directive documentation
 
 ## Risks & Considerations
 

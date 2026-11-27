@@ -47,14 +47,14 @@ that already work in view mode, such as project controls, available according to
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/index.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/input/editorMode.ts`
-- `packages/editor/plugins/keyboard-editing/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/layout/text-geometry/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/project/undoRedo.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/project/` and `packages/editor/packages/editor-core/packages/editor-state/src/input/`
-- `packages/editor/plugins/keyboard-navigation/`
-- `packages/editor/plugins/keyboard-mode-switching/`
+- `editor/core/editor-state/src/index.ts`
+- `editor/core/editor-state/src/input/editorMode.ts`
+- `editor/plugins/keyboard-editing/`
+- `editor/core/editor-state/src/layout/text-geometry/`
+- `editor/core/editor-state/src/project/undoRedo.ts`
+- `editor/core/editor-state/src/project/` and `editor/core/editor-state/src/input/`
+- `editor/plugins/keyboard-navigation/`
+- `editor/plugins/keyboard-mode-switching/`
 - Default/gallery browser composition
 
 ## Risks & Considerations
@@ -66,7 +66,7 @@ testing helpers. Changing the product website's initial mode is a separate produ
 ## Validation Checkpoints
 
 - Run `npx nx run-many --target=test --projects=@8f4e/editor-state,@8f4e/editor-core,@8f4e/editor-default` and corresponding typechecks.
-- Run `npx nx run @8f4e/editor-website:build` and inspect view/edit dependency loading with representative mounts.
+- Run `npx nx run @8f4e/editor-webapp:build` and inspect view/edit dependency loading with representative mounts.
 - Exercise text entry, clipboard actions, block operations, undo/redo, and project controls across mode transitions.
 - Test deferred loading, load failure, rapid toggling, and disposal with focused lifecycle tests.
 
@@ -78,7 +78,7 @@ testing helpers. Changing the product website's initial mode is a separate produ
 
 ## References
 
-- [Editor-state initialization](../../packages/editor/packages/editor-core/packages/editor-state/src/index.ts)
+- [Editor-state initialization](../../editor/core/editor-state/src/index.ts)
 
 ## Notes
 

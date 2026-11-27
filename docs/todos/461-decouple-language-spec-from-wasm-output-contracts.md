@@ -76,12 +76,12 @@ backend.
 
 ## Validation Checkpoints
 
-- `rg -n "@8f4e/compiler-wasm-utils|WebAssembly|WASM|Wasm|wasmIndex|typeIndex|FunctionTypeRegistry|byteCode|codeBuffer" packages/compiler/packages/language-spec/src`
+- `rg -n "@8f4e/compiler-wasm-utils|WebAssembly|WASM|Wasm|wasmIndex|typeIndex|FunctionTypeRegistry|byteCode|codeBuffer" compiler/packages/language-spec/src`
 - `npx nx run @8f4e/language-spec:test`
 - `npx nx run @8f4e/language-spec:typecheck`
 - `npx nx run @8f4e/wasm-codegen:test`
 - `npx nx run @8f4e/compiler:test`
-- `npx nx run @8f4e/editor-website:build`
+- `npx nx run @8f4e/editor-webapp:build`
 
 ## Success Criteria
 
@@ -93,9 +93,9 @@ backend.
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec` - loses WASM-only output/runtime contracts.
-- `packages/compiler/packages/wasm-codegen` - likely gains the WASM output and runtime contract types.
-- `packages/compiler/src` - should remain an orchestrator using target-neutral contracts and the WASM backend API.
+- `compiler/packages/language-spec` - loses WASM-only output/runtime contracts.
+- `compiler/packages/wasm-codegen` - likely gains the WASM output and runtime contract types.
+- `compiler/src` - should remain an orchestrator using target-neutral contracts and the WASM backend API.
 - runtime and compiler-worker packages - may need import updates for WASM-specific result/runtime types.
 
 ## Risks & Considerations

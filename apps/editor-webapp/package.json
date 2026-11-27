@@ -1,0 +1,71 @@
+{
+  "name": "@8f4e/editor-webapp",
+  "version": "7.2.1",
+  "private": true,
+  "description": "8f4e editor web app",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/editor-default": "*",
+    "@8f4e/editor-webmcp": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "vite": "7.3.8",
+    "vite-plugin-pwa": "1.3.0",
+    "vite-plugin-static-copy": "4.1.1"
+  },
+  "nx": {
+    "projectType": "application",
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "dependsOn": ["watch-deps"],
+        "command": "vite"
+      },
+      "build-deps": {
+        "executor": "nx:noop",
+        "dependsOn": ["^build"]
+      },
+      "watch-deps": {
+        "continuous": true,
+        "dependsOn": ["build-deps"],
+        "options": { "cwd": "{workspaceRoot}" },
+        "command": "nx watch --projects=@8f4e/editor-webapp --includeDependencies -- nx run @8f4e/editor-webapp:build-deps"
+      },
+      "lint": {},
+      "build": {
+        "dependsOn": ["typecheck:production", "^build"],
+        "command": "vite build"
+      },
+      "serve": {
+        "options": { "cwd": "{projectRoot}" },
+        "dependsOn": ["build"],
+        "command": "vite preview"
+      },
+      "typecheck": { "command": "tsc --noEmit --project tsconfig.json" },
+      "typecheck:production": {
+        "inputs": ["production", "^production"],
+        "cache": true,
+        "options": { "cwd": "{projectRoot}" },
+        "dependsOn": ["^build"],
+        "command": "tsc --noEmit --project tsconfig.production.json"
+      },
+      "test:browser": { "command": "playwright test" },
+      "kill-dev": {
+        "options": { "cwd": "{workspaceRoot}" },
+        "command": "lsof -ti tcp:3000 | xargs -r kill"
+      }
+    },
+    "tags": ["type:application", "scope:editor"]
+  }
+}

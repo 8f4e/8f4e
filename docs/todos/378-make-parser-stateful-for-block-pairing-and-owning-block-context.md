@@ -78,7 +78,7 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 - `npx nx run @8f4e/tokenizer:test`
 - `npx nx run @8f4e/compiler:test`
 - `npx nx run @8f4e/editor-state:test`
-- `rg -n "INVALID_BLOCK_STRUCTURE|diagnosticSource|matchingIfEndIndex|matchingBlockEndIndex" packages/compiler packages/editor`
+- `rg -n "INVALID_BLOCK_STRUCTURE|diagnosticSource|matchingIfEndIndex|matchingBlockEndIndex" compiler editor`
 
 ## Success Criteria
 
@@ -90,12 +90,12 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 
 ## Affected Components
 
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/parser.ts` - parser state, block pairing, and top-level ownership tracking
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/types.ts` - parser-owned linkage metadata for structural blocks
-- `packages/compiler/packages/diagnostics/src/syntaxError.ts` - construct syntax diagnostics with caller-supplied source ownership
-- `packages/compiler/packages/diagnostics/src/compilerError.ts` - preserve complete diagnostic locations during transport
-- `packages/editor/plugins/compiler/src/diagnostic-presentation.ts` - consume supplied diagnostic locations directly
-- `packages/compiler/tests/` and `packages/compiler/packages/sub-program/packages/tokenizer/src/` - parser and integration coverage
+- `compiler/packages/sub-program/packages/tokenizer/src/parser.ts` - parser state, block pairing, and top-level ownership tracking
+- `compiler/packages/sub-program/packages/tokenizer/src/types.ts` - parser-owned linkage metadata for structural blocks
+- `compiler/packages/diagnostics/src/syntaxError.ts` - construct syntax diagnostics with caller-supplied source ownership
+- `compiler/packages/diagnostics/src/compilerError.ts` - preserve complete diagnostic locations during transport
+- `editor/plugins/compiler/src/diagnostic-presentation.ts` - consume supplied diagnostic locations directly
+- `compiler/tests/` and `compiler/packages/sub-program/packages/tokenizer/src/` - parser and integration coverage
 
 ## Risks & Considerations
 

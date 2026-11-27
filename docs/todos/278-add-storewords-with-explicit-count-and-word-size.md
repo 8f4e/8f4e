@@ -66,16 +66,16 @@ storeWords 16 %buffer
 - Add `i32.store16` helper (and reuse `i32.store8` from `storeBytes` work).
 
 ### Step 2: Add `storeWords` instruction compiler
-- Implement `packages/compiler/src/instructionCompilers/storeWords.ts`.
+- Implement `compiler/src/instructionCompilers/storeWords.ts`.
 - Validate arguments (`count` and `wordSizeExpr` required; non-negative count; supported resolved word sizes).
 - Resolve `wordSizeExpr` at compile time from literals/constants/supported prefixes (including `%buffer`).
 - Validate operand availability (`count + 1` stack items including destination address).
 - Emit contiguous stores in correct source order with opcode chosen from `wordSize`.
 
 ### Step 3: Register and document instruction
-- Register in `packages/compiler/src/instructionCompilers/index.ts`.
-- Add docs to `packages/compiler/docs/instructions/memory.md`.
-- Add link in `packages/compiler/docs/instructions.md`.
+- Register in `compiler/src/instructionCompilers/index.ts`.
+- Add docs to `compiler/docs/instructions/memory.md`.
+- Add link in `compiler/docs/instructions.md`.
 
 ### Step 4: Tests
 - Add happy-path tests for `wordSize` 1/2/4.
@@ -86,7 +86,7 @@ storeWords 16 %buffer
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test -- --run instructionCompilers`
-- `rg -n "storeWords|store16|store8|wordSize" packages/compiler/src packages/compiler/docs`
+- `rg -n "storeWords|store16|store8|wordSize" compiler/src compiler/docs`
 
 ## Success Criteria
 
@@ -98,11 +98,11 @@ storeWords 16 %buffer
 
 ## Affected Components
 
-- `packages/compiler/src/instructionCompilers/storeWords.ts` (new)
-- `packages/compiler/src/instructionCompilers/index.ts`
-- `packages/compiler/src/wasmUtils/store/i32store16.ts` (new)
-- `packages/compiler/docs/instructions/memory.md`
-- `packages/compiler/docs/instructions.md`
+- `compiler/src/instructionCompilers/storeWords.ts` (new)
+- `compiler/src/instructionCompilers/index.ts`
+- `compiler/src/wasmUtils/store/i32store16.ts` (new)
+- `compiler/docs/instructions/memory.md`
+- `compiler/docs/instructions.md`
 
 ## Risks & Considerations
 

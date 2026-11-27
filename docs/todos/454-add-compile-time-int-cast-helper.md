@@ -103,7 +103,7 @@ loop int(SAMPLE_RATE/60)
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test`
-- `npx nx run @8f4e/examples:test`
+- `npx nx run @8f4e/examples-integration:test`
 - Compile a small example containing `float[] buffer int(113*48000/32000)`.
 
 ## Success Criteria
@@ -115,9 +115,9 @@ loop int(SAMPLE_RATE/60)
 
 ## Affected Components
 
-- `packages/compiler` - compile-time argument resolution and normalization.
+- `compiler` - compile-time argument resolution and normalization.
 - tokenizer/parser package - argument syntax support for compile-time helper calls.
-- `packages/examples` - examples can use `int(...)` for sample-rate-relative sizes after implementation.
+- `examples` - examples can use `int(...)` for sample-rate-relative sizes after implementation.
 
 ## Risks & Considerations
 

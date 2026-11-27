@@ -1,0 +1,53 @@
+{
+  "name": "@8f4e/cli",
+  "version": "5.2.1",
+  "private": true,
+  "description": "CLI for compiling 8f4e projects",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "cli": "bin/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli": "./dist/cli.js"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/compiler": "*",
+    "@8f4e/language-spec": "*",
+    "@8f4e/stdlib": "*",
+    "@8f4e/test-runner": "*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "application",
+    "targets": {
+      "build": { "command": "vite build && tsc -p tsconfig.build.json" },
+      "lint": {},
+      "test": {
+        "executor": "@nx/vitest:test",
+        "dependsOn": ["^build", "build"]
+      },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:tooling", "scope:core"]
+  }
+}

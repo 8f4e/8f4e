@@ -1,0 +1,5 @@
+{
+	"extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+	"compilerOptions": { "rootDir": ".", "types": ["node", "vitest/globals", "vite/client"] },
+	"include": ["src/**/*.ts", "src/**/*.test.ts"]
+}

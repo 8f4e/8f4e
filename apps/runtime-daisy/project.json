@@ -1,0 +1,13 @@
+{
+	"name": "@8f4e/runtime-daisy",
+	"projectType": "application",
+	"targets": {
+		"build": {
+			"cache": false,
+			"dependsOn": [],
+			"inputs": ["production"],
+			"command": "rm -rf dist/wamr dist/firmware && cmake -S . -B dist/wamr -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=MinSizeRel && cmake --build dist/wamr --parallel 4 && make BUILD_DIR=dist/firmware -j4"
+		}
+	},
+	"tags": ["type:app", "scope:runtime"]
+}

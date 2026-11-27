@@ -1,0 +1,5 @@
+{
+	"extends": "@8f4e/config/tsconfig.dom.json",
+	"compilerOptions": { "types": ["vite/client"] },
+	"exclude": ["node_modules", "src/**/*.test.ts", "dist"]
+}

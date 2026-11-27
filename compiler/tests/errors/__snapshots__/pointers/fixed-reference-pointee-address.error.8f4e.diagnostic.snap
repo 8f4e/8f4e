@@ -1,0 +1,14 @@
+{
+  "code": 86,
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "The pointee address prefix requires a pointer-typed identifier: slot. (86)",
+  "symbol": "invalidFixedReference",
+}

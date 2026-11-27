@@ -56,7 +56,7 @@ trial; obtain the authors' permission before including them in a published examp
 Hold notes when auditioning: several pads have very slow attacks and long release tails.
 
 All 16 presets converted so far are also saved as public constants-block examples under
-[`packages/examples/src/modules/presets/dx7-algorithm-5`](../../packages/examples/src/modules/presets/dx7-algorithm-5/README.md),
+[`examples/src/modules/presets/dx7-algorithm-5`](../../examples/src/modules/presets/dx7-algorithm-5/README.md),
 including six Vivolator patches. The editor discovers them automatically in
 **Add Built-in Block → Presets → Dx7 Algorithm 5**. The ambient entries retain their local-audition restrictions.
 

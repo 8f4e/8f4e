@@ -1,0 +1,32 @@
+{
+  "name": "@8f4e/stdlib",
+  "version": "3.2.1",
+  "private": true,
+  "description": "8f4e standard library source files",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    "./std/*": "./std/*"
+  },
+  "files": [
+    "std"
+  ],
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/project-preparser": "*",
+    "@8f4e/tokenizer": "*",
+    "@types/node": "24.13.2",
+    "vitest": "4.1.12"
+  }
+}

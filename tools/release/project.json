@@ -1,27 +1,36 @@
 {
 	"name": "@8f4e/release",
 	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					{
+						"command": "node --test scripts/*.test.mjs",
+						"forwardAllArgs": false
+					}
+				]
+			}
+		},
+		"lint": { "command": "biome check scripts" },
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,
-			"dependsOn": ["build-and-metrics", "test-and-coverage"]
+			"dependsOn": ["build-and-metrics", "tests"]
 		},
 		"build-and-metrics": {
 			"executor": "nx:noop",
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/examples"],
+					"projects": ["@8f4e/compiler-benchmarks"],
 					"target": "log-bytecode-size"
 				},
 				{
-					"projects": ["@8f4e/examples"],
+					"projects": ["@8f4e/compiler-benchmarks"],
 					"target": "log-compiler-coverage-counts"
 				},
-				{
-					"projects": ["@8f4e/compiler"],
-					"target": "docs-coverage"
-				},
+				"docs-coverage",
 				{
 					"projects": ["@8f4e/8f4e-website"],
 					"target": "build"
@@ -30,41 +39,38 @@
 			]
 		},
 		"bundle-sizes": {
-			"executor": "nx:run-commands",
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/editor-website"],
+					"projects": ["@8f4e/editor-webapp"],
 					"target": "build"
 				}
 			],
-			"options": {
-				"command": "node scripts/log-bundle-sizes.mjs",
-				"cwd": "{workspaceRoot}"
-			}
+			"options": { "cwd": "{workspaceRoot}" },
+			"command": "node {projectRoot}/scripts/log-bundle-sizes.mjs"
 		},
-		"test-and-coverage": {
-			"executor": "nx:run-commands",
+		"docs-coverage": {
 			"cache": false,
-			"dependsOn": ["tests"],
-			"options": {
-				"command": "node scripts/log-test-coverage.mjs",
-				"cwd": "{workspaceRoot}"
-			}
+			"outputs": ["{workspaceRoot}/logs/tsdoc-coverage"],
+			"options": { "cwd": "{workspaceRoot}" },
+			"command": "node {projectRoot}/scripts/tsdoc-coverage.mjs"
 		},
 		"tests": {
 			"executor": "nx:noop",
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
-					"target": "test",
-					"options": "forward"
+					"projects": [
+						"@8f4e/cli",
+						"*",
+						"!@8f4e/editor-webapp",
+						"!glugglugglug",
+						"!@8f4e/runtime-linux",
+						"!@8f4e/runtime-command"
+					],
+					"target": "test"
 				}
-			],
-			"options": {
-				"coverage": true
-			}
+			]
 		}
 	},
 	"tags": ["type:tooling", "scope:release"]

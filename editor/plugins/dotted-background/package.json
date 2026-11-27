@@ -1,0 +1,44 @@
+{
+  "name": "@8f4e/editor-plugin-dotted-background",
+  "version": "0.1.5",
+  "private": true,
+  "description": "World-anchored procedural dotted background for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-palette": "*",
+    "@8f4e/web-ui": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@types/node": "24.13.2",
+    "@vitest/browser": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "glugglugglug": "*",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": { "command": "biome check src screenshot-tests" },
+      "test:screenshot": {}
+    },
+    "tags": ["type:library", "scope:editor"]
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+  "compilerOptions": { "types": ["node", "vitest/globals"], "lib": ["ES2024", "DOM", "DOM.Iterable"] }
+}

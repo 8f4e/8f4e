@@ -1,0 +1,4 @@
+{
+  "extends": "@8f4e/config/tsconfig.library.json",
+  "compilerOptions": { "lib": ["es2023", "DOM"] }
+}

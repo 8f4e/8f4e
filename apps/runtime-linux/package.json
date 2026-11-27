@@ -1,0 +1,51 @@
+{
+  "name": "@8f4e/runtime-linux",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone Linux JACK audio and MIDI host for compiled 8f4e programs",
+  "license": "MIT",
+  "nx": {
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "cache": false,
+        "dependsOn": [],
+        "inputs": ["production"],
+        "command": "rm -rf dist && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build dist/build --parallel 2"
+      },
+      "test": {
+        "executor": "nx:run-commands",
+        "cache": false,
+        "dependsOn": [
+          {
+            "projects": ["@8f4e/cli"],
+            "target": "build",
+            "params": "ignore"
+          },
+          {
+            "projects": ["@8f4e/runtime-command"],
+            "target": "test",
+            "params": "ignore"
+          }
+        ],
+        "inputs": [
+          "default",
+          "^production",
+          {
+            "projects": ["@8f4e/cli"],
+            "input": "production"
+          }
+        ],
+        "options": {
+          "commands": [
+            {
+              "command": "node ../cli/bin/cli.js compile tests/instrument.8f4e --wasm-output dist/tests/instrument.wasm --memory-output dist/tests/instrument.json && node tests/prepare-commands.mjs && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && cmake --build dist/build --parallel 2 && ctest --test-dir dist/build --output-on-failure",
+              "forwardAllArgs": false
+            }
+          ]
+        }
+      }
+    },
+    "tags": ["type:app", "scope:runtime"]
+  }
+}

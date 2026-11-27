@@ -1,0 +1,62 @@
+{
+  "name": "@8f4e/editor-webmcp",
+  "version": "0.3.9",
+  "private": true,
+  "description": "Single-editor WebMCP adapter for 8f4e webpage hosts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/language-spec": "*"
+  },
+  "devDependencies": {
+    "@8f4e/compiler": "*",
+    "@8f4e/config": "*",
+    "@8f4e/editor-default": "*",
+    "@8f4e/editor-plugin-example-modules": "*",
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/examples": "*",
+    "@8f4e/vite-plugin-sources": "*",
+    "@vitest/browser": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": {
+        "dependsOn": ["^build", "generate-content"],
+        "command": "rm -rf dist && tsc"
+      },
+      "test": {
+        "dependsOn": ["build"],
+        "command": "vitest run"
+      },
+      "typecheck": {
+        "dependsOn": ["build"],
+        "command": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.tools.json"
+      },
+      "lint": { "command": "biome check src browser-tests scripts" },
+      "test:browser": { "command": "vitest run --config vitest.browser.config.ts" },
+      "generate-content": {
+        "cache": true,
+        "inputs": ["production", "^production"],
+        "outputs": ["{projectRoot}/src/generated"],
+        "dependsOn": ["^build"],
+        "options": { "cwd": "{projectRoot}" },
+        "command": "vite build --config vite.content.config.ts && node .content-generator/generate-content.js"
+      }
+    },
+    "tags": ["type:library", "scope:editor"]
+  }
+}

@@ -15,7 +15,7 @@ completed: null
 Compiler diagnostic ownership is currently split across package boundaries:
 
 - `@8f4e/language-spec` owns shared diagnostic shapes and `ErrorCode`.
-- `packages/compiler/src/compilerError.ts` owns `getError(...)` and the default compiler error messages.
+- `compiler/src/compilerError.ts` owns `getError(...)` and the default compiler error messages.
 - compiler-adjacent packages such as `@8f4e/constant-resolver` cannot emit normal compiler diagnostics without
   importing compiler internals or throwing a package-local error that the compiler wraps at the integration boundary.
 
@@ -39,7 +39,7 @@ assembly in the compiler or the package that owns the phase.
 
 ## Anti-Patterns
 
-- Do not make compiler-adjacent packages import `packages/compiler/src/compilerError.ts`.
+- Do not make compiler-adjacent packages import `compiler/src/compilerError.ts`.
 - Do not move broad compiler phase logic into the diagnostics package.
 - Do not let diagnostics depend on tokenizer, compiler, or constant-resolver implementation details.
 - Do not turn `language-spec` into the message-formatting package unless a dedicated diagnostics package proves too
@@ -49,13 +49,13 @@ assembly in the compiler or the package that owns the phase.
 
 ### Step 1: Create the Package
 
-- Add `packages/compiler/packages/diagnostics`.
+- Add `compiler/packages/diagnostics`.
 - Configure Nx build, typecheck, test, and package metadata following nearby compiler subpackages.
 - Add a dependency on `@8f4e/language-spec`.
 
 ### Step 2: Move Diagnostic Construction
 
-- Move `getError(...)` and its detail formatting support out of `packages/compiler/src/compilerError.ts`.
+- Move `getError(...)` and its detail formatting support out of `compiler/src/compilerError.ts`.
 - Re-export or replace compiler imports so current compiler code keeps using a stable import path.
 - Keep error codes and diagnostic shapes in `@8f4e/language-spec`.
 
@@ -77,11 +77,11 @@ assembly in the compiler or the package that owns the phase.
 - `npx nx run @8f4e/compiler-diagnostics:typecheck`
 - `npx nx run @8f4e/compiler:test`
 - `npx nx run @8f4e/compiler:typecheck`
-- `rg -n "from './compilerError'|from '../compilerError'|compilerError" packages/compiler`
+- `rg -n "from './compilerError'|from '../compilerError'|compilerError" compiler`
 
 ## Success Criteria
 
-- [ ] `getError(...)` lives outside `packages/compiler/src`.
+- [ ] `getError(...)` lives outside `compiler/src`.
 - [ ] compiler diagnostics remain message-compatible unless intentionally changed.
 - [ ] compiler-adjacent packages can use shared diagnostic construction without depending on `@8f4e/compiler`.
 - [ ] `@8f4e/language-spec` remains the home of diagnostic types and error codes, not message formatting.
@@ -89,10 +89,10 @@ assembly in the compiler or the package that owns the phase.
 
 ## Affected Components
 
-- `packages/compiler/src/compilerError.ts` - likely deleted, reduced to a re-export, or moved.
-- `packages/compiler/packages/language-spec/src/errors.ts` - remains the source of error codes and diagnostic types.
-- `packages/compiler/packages/sub-program/packages/constant-resolver` - candidate consumer for shared diagnostics.
-- `packages/compiler/packages/sub-program/src/compileSubProgram.ts` - current `ConstantResolverError` wrapper may become thinner.
+- `compiler/src/compilerError.ts` - likely deleted, reduced to a re-export, or moved.
+- `compiler/packages/language-spec/src/errors.ts` - remains the source of error codes and diagnostic types.
+- `compiler/packages/sub-program/packages/constant-resolver` - candidate consumer for shared diagnostics.
+- `compiler/packages/sub-program/src/compileSubProgram.ts` - current `ConstantResolverError` wrapper may become thinner.
 
 ## Risks & Considerations
 

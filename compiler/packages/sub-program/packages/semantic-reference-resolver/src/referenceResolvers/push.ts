@@ -1,0 +1,201 @@
+import { getError } from '@8f4e/compiler-diagnostics';
+import {
+	ArgumentType,
+	type CodegenPushLine,
+	ErrorCode,
+	getPointerDepthFromMetadata,
+	type LocalValueMetadata,
+	type MemoryPointerIdentifier,
+	type PushLine,
+	type ResolvedLocalPointerPushLine,
+	type ResolvedLocalPushLine,
+	type ResolvedMemoryPointerPushLine,
+	type ResolvedMemoryPushLine,
+	type ResolvedReferencePushLine,
+} from '@8f4e/language-spec';
+import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
+import type { ReferenceResolutionContext } from '../context';
+import { validateAddressReference, validateUnresolvedValueExpression } from './helpers';
+
+function isResolvedPointerLocal(
+	local: ReferenceResolutionContext['locals'][string] | undefined
+): local is Extract<LocalValueMetadata, { pointeeBaseType: string }> {
+	return !!local?.pointeeBaseType;
+}
+
+function validateDereferenceDepth(
+	pointerArgument: MemoryPointerIdentifier,
+	declaredPointerDepth: number,
+	line: PushLine,
+	context: ReferenceResolutionContext
+): void {
+	if (pointerArgument.dereferenceDepth > declaredPointerDepth) {
+		throw getError(ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED, line, {
+			symbol: context.codeBlockId,
+			details: {
+				identifier: pointerArgument.value,
+			},
+		});
+	}
+}
+
+function throwIfPointeeCountIsUnknown(line: PushLine, context: ReferenceResolutionContext): void {
+	const argument = line.arguments[0];
+	if (argument?.type !== ArgumentType.IDENTIFIER || argument.referenceKind !== 'pointee-element-count') {
+		return;
+	}
+
+	const base = argument.targetMemoryId;
+	const pointerMetadata = getResolvedMemoryDeclaration(context, base) ?? context.locals[base];
+	if (pointerMetadata?.pointeeBaseType && pointerMetadata.pointeeElementCount === undefined) {
+		throw getError(ErrorCode.POINTEE_ELEMENT_COUNT_UNKNOWN, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: argument.value },
+		});
+	}
+}
+
+/**
+ * Resolves value arguments for the `push` instruction.
+ * For identifier arguments, validates that the identifier is a known memory item, pointer,
+ * memory reference, local, or valid intermodule reference.
+ * Throws UNDECLARED_IDENTIFIER for unrecognized identifiers.
+ *
+ * @param line - Source AST line being processed.
+ * @param context - Compilation context used by the operation.
+ * @returns Push line with resolved target metadata where needed.
+ */
+export default function resolvePushReferences(line: PushLine, context: ReferenceResolutionContext): CodegenPushLine {
+	throwIfPointeeCountIsUnknown(line, context);
+
+	const argument = line.arguments[0];
+	if (argument?.type === ArgumentType.COMPILE_TIME_EXPRESSION) {
+		validateUnresolvedValueExpression(argument, line, context);
+	}
+	if (argument?.type === ArgumentType.IDENTIFIER) {
+		const { value, referenceKind } = argument;
+		validateAddressReference(argument, line, context);
+		if (referenceKind === 'plain') {
+			const local = context.locals[value];
+			if (local) {
+				const resolvedLine: Omit<ResolvedLocalPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [argument],
+				};
+				return { ...resolvedLine, resolvedTarget: { kind: 'local' as const, binding: context.bindingsByName[value]! } };
+			}
+
+			const memoryItem = getResolvedMemoryDeclaration(context, value);
+			if (memoryItem) {
+				const resolvedLine: Omit<ResolvedMemoryPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [argument],
+				};
+				return { ...resolvedLine, resolvedTarget: { kind: 'memory' as const, memoryItem } };
+			}
+		}
+		if (referenceKind === 'memory-pointer') {
+			const pointerArgument = argument as MemoryPointerIdentifier;
+			const plainArgument = {
+				type: ArgumentType.IDENTIFIER,
+				value: pointerArgument.targetMemoryId,
+				referenceKind: 'plain' as const,
+				scope: 'local' as const,
+			};
+			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
+			if (slot) {
+				const memory = slot.targetMemory;
+				const pointerDepth = getPointerDepthFromMetadata(memory);
+				if (pointerArgument.dereferenceDepth === 0) {
+					if (pointerDepth === 0) {
+						throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+							symbol: context.codeBlockId,
+							details: { identifier: pointerArgument.targetMemoryId },
+						});
+					}
+					if (memory.allocatedByteLength < memory.elementWordSize) {
+						throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
+					}
+					const resolvedLine: Omit<ResolvedReferencePushLine, 'resolvedTarget'> = {
+						...line,
+						arguments: [{ ...pointerArgument, dereferenceDepth: 1 }],
+					};
+					return { ...resolvedLine, resolvedTarget: { kind: 'reference' as const, slot } };
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth + 1, line, context);
+				if (memory.allocatedByteLength < memory.elementWordSize) {
+					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
+				}
+				return { ...line, arguments: [pointerArgument], resolvedTarget: { kind: 'reference', slot } };
+			}
+			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
+			if (memoryItem) {
+				const pointerDepth = getPointerDepthFromMetadata(memoryItem);
+				if (pointerArgument.dereferenceDepth === 0) {
+					if (pointerDepth === 0) {
+						throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+							symbol: context.codeBlockId,
+							details: { identifier: pointerArgument.targetMemoryId },
+						});
+					}
+					if (memoryItem.allocatedByteLength < memoryItem.elementWordSize) {
+						throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
+					}
+					const resolvedLine: Omit<ResolvedMemoryPushLine, 'resolvedTarget'> = {
+						...line,
+						arguments: [plainArgument],
+					};
+					return { ...resolvedLine, resolvedTarget: { kind: 'memory' as const, memoryItem } };
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth, line, context);
+				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [pointerArgument],
+				};
+				return { ...resolvedLine, resolvedTarget: { kind: 'memory-pointer' as const, memoryItem } };
+			}
+
+			const local = context.locals[pointerArgument.targetMemoryId];
+			if (pointerArgument.dereferenceDepth === 0 && local) {
+				if (!isResolvedPointerLocal(local)) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+						symbol: context.codeBlockId,
+						details: { identifier: pointerArgument.targetMemoryId },
+					});
+				}
+				const resolvedLine: Omit<ResolvedLocalPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [plainArgument],
+				};
+				return {
+					...resolvedLine,
+					resolvedTarget: {
+						kind: 'local' as const,
+						binding: context.bindingsByName[pointerArgument.targetMemoryId]!,
+					},
+				};
+			}
+			if (isResolvedPointerLocal(local)) {
+				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(local), line, context);
+				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [pointerArgument],
+				};
+				return {
+					...resolvedLine,
+					resolvedTarget: {
+						kind: 'local-pointer' as const,
+						binding: context.bindingsByName[pointerArgument.targetMemoryId]!,
+					},
+				};
+			}
+		}
+
+		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: value },
+		});
+	}
+
+	return { ...line, arguments: [argument] };
+}

@@ -59,7 +59,7 @@ jobs:
 
       - name: Commit release metrics
         run: |
-          git add logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage logs/test-coverage
+          git add logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage
           if ! git diff --cached --quiet; then
             git commit -m "chore(release): record release metrics" --no-verify
           fi
@@ -68,15 +68,15 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: 8f4e-website
-          path: packages/8f4e-website/dist
+          path: apps/8f4e-website/dist
           include-hidden-files: true
           retention-days: 1
 
       - name: Upload editor.8f4e.com
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: editor-website
-          path: packages/editor/packages/editor-website/dist
+          name: editor-webapp
+          path: apps/editor-webapp/dist
           include-hidden-files: true
           retention-days: 1
 
