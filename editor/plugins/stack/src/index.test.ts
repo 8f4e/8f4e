@@ -41,6 +41,30 @@ describe('stack plugin', () => {
 			expect.any(Number)
 		);
 	});
+	it('refreshes continuation stack labels when block selection expands and collapses it', async () => {
+		const test = await setup(plugin, ['module audio', '; @hide', 'push', '- 7 ; @stack', 'drop', 'moduleEnd']);
+		const continuationRow = test.block.code.indexOf('- 7 ; @stack');
+		expect(continuationRow).toBeGreaterThanOrEqual(0);
+
+		test.render();
+		expect(test.block.displayModel.sourceLineIndexToDisplayRow[continuationRow]).toBeUndefined();
+		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+
+		test.store.set('project.selectedCodeBlock', test.block);
+		expect(test.block.displayModel.sourceLineIndexToDisplayRow[continuationRow]).toBeDefined();
+		test.render();
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+			expect.any(Number),
+			expect.any(Number),
+			textToGlyphIds('7'),
+			expect.any(Number)
+		);
+
+		test.store.set('project.selectedCodeBlock', undefined);
+		expect(test.block.displayModel.sourceLineIndexToDisplayRow[continuationRow]).toBeUndefined();
+		test.render();
+		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+	});
 	it('draws an empty stack and ignores unsupported arguments', async () => {
 		const test = await setup(plugin, ['module audio', 'push 1', 'drop ; @stack', '; @stack extra', 'moduleEnd']);
 		test.render();

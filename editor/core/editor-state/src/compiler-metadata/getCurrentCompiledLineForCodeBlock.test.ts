@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { afterEach, describe, expect, it } from 'vitest';
-import { prepareSourceLines } from '@8f4e/tokenizer';
 import initState, { applyCodeBlockSourceEdits, serializeProjectLevel } from '../index';
+import { refreshBlockSourceMetadata } from '../project/blocks/refreshSourceMetadata';
 import { getCurrentCompiledLineForCodeBlock } from './getCurrentCompiledLineForCodeBlock';
 
 const cleanups: Array<() => void> = [];
@@ -52,7 +52,8 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		const pushRow = incompleteCode.indexOf('push 2');
 		expect(pushRow).toBeGreaterThanOrEqual(0);
 		incompleteCode.splice(pushRow + 1, 0, '-');
-		test.block.sourcePreparation = prepareSourceLines(incompleteCode);
+		test.block.code = incompleteCode;
+		refreshBlockSourceMetadata(test.block, []);
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, pushRow + 1)).toBeUndefined();
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, pushRow)?.parsedLine?.instruction).toBe('push');
 	});

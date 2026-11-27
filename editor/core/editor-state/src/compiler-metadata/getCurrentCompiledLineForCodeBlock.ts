@@ -20,9 +20,7 @@ export function getCurrentCompiledLineForCodeBlock(
 			? getCompiledFunctionForCodeBlock(block, state)
 			: getCompiledModuleForCodeBlock(block, state);
 	if (!compilation) return undefined;
-	const instructionLineNumber = block.sourcePreparation
-		? block.sourcePreparation.instructionLineBySourceLine[sourceLineNumber]
-		: sourceLineNumber;
+	const instructionLineNumber = block.sourcePreparation.instructionLineBySourceLine[sourceLineNumber];
 	if (instructionLineNumber === undefined) return undefined;
 	return {
 		parsedLine: compilation.ast.lines.find(line => line.lineNumber === instructionLineNumber),

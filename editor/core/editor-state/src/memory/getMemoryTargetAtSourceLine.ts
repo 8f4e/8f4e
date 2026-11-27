@@ -5,7 +5,6 @@ import {
 	isReferenceSlotLine,
 	type MemoryDeclarationLine,
 } from '@8f4e/language-spec';
-import { parseLine, prepareSourceLines } from '@8f4e/tokenizer';
 import { getCompiledModuleForCodeBlock } from '../compiler-metadata/getCompiledModuleForCodeBlock';
 import resolveMemoryTarget, { type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
@@ -26,16 +25,18 @@ export default function getMemoryTargetAtSourceLine(
 ): { target: ResolvedMemoryTarget | undefined } | undefined {
 	if (codeBlock.blockType !== 'module') return;
 
-	const sourcePreparation = codeBlock.sourcePreparation ?? prepareSourceLines(codeBlock.code);
+	const sourcePreparation = codeBlock.sourcePreparation;
 	const instructionLineNumber = sourcePreparation.instructionLineBySourceLine[sourceLineIndex];
 	if (instructionLineNumber === undefined) return;
-	const logicalLine = sourcePreparation.lines.find(({ lineNumber }) => lineNumber === instructionLineNumber);
-	if (!logicalLine) return;
-	const parsed = parseLine(logicalLine.line, instructionLineNumber);
-	if (!parsed.ok) return;
-	const sourceLine = parsed.value;
-	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
 	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
+	const currentCompiledLine =
+		state.compiler.result.inputRevision === state.compilerInputRevision
+			? compiledModule?.ast.lines.find(line => line.lineNumber === instructionLineNumber)
+			: undefined;
+	const sourceLine =
+		currentCompiledLine ?? sourcePreparation.parsedMemoryLineBySourceLine[sourceLineIndex];
+	if (!sourceLine) return;
+	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
 	if (!compiledModule) return { target: undefined };
 	if (isReferenceSlotLine(sourceLine)) {
 		const name = sourceLine.arguments[0];

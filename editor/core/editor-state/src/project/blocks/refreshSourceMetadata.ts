@@ -1,6 +1,16 @@
-import type { EditorCodeBlock, EditorDirectiveDefinition, ProjectLevel } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
-import { prepareSourceLines } from '@8f4e/tokenizer';
+import type {
+	CodeBlockSourcePreparation,
+	EditorCodeBlock,
+	EditorDirectiveDefinition,
+	ProjectLevel,
+} from '@8f4e/editor-state-types';
+import {
+	createChildProjectGroupPath,
+	isMemoryDeclarationInstructionName,
+	isReferenceSlotInstruction,
+	type CompilerASTLine,
+} from '@8f4e/language-spec';
+import { parseLine, prepareSourceLines } from '@8f4e/tokenizer';
 import parsePositionDirective from '../../directives/block/positionDirective';
 import { deriveDirectiveFacts } from '../../directives/blockDirectiveRegistry';
 import { parseBlockDirectives } from '../../directives/parseBlockDirectives';
@@ -15,6 +25,24 @@ import getCodeBlockTypeFromSource from './getCodeBlockTypeFromSource';
 import replaceBlocksInPlace from './replaceBlocksInPlace';
 import { partitionCodeBlocksByAlwaysOnTop } from './zOrder';
 
+function prepareBlockSource(code: string[]): CodeBlockSourcePreparation {
+	const prepared = prepareSourceLines(code);
+	const parsedMemoryLineByInstructionLine = new Map<number, CompilerASTLine>();
+	for (const sourceLine of prepared.lines) {
+		const instruction = sourceLine.line.trimStart().split(/[\s;]/, 1)[0] ?? '';
+		if (!isMemoryDeclarationInstructionName(instruction) && !isReferenceSlotInstruction(instruction)) continue;
+		const parsed = parseLine(sourceLine.line, sourceLine.lineNumber);
+		if (parsed.ok) parsedMemoryLineByInstructionLine.set(sourceLine.lineNumber, parsed.value);
+	}
+
+	return {
+		...prepared,
+		parsedMemoryLineBySourceLine: prepared.instructionLineBySourceLine.map(instructionLineNumber =>
+			instructionLineNumber === undefined ? undefined : parsedMemoryLineByInstructionLine.get(instructionLineNumber)
+		),
+	};
+}
+
 /** Keep the editor's entry table authoritative, including empty previously declared entries. */
 export function rememberEntry(project: ProjectLevel, block: EditorCodeBlock): void {
 	if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
@@ -24,7 +52,7 @@ export function rememberEntry(project: ProjectLevel, block: EditorCodeBlock): vo
 
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: EditorDirectiveDefinition[]): void {
-	block.sourcePreparation = prepareSourceLines(block.code);
+	block.sourcePreparation = prepareBlockSource(block.code);
 	const [row, col] = clampSourcePosition(block.code, block.cursor.row, block.cursor.col);
 	block.cursor.row = row;
 	block.cursor.col = col;

@@ -17,9 +17,12 @@ function isArgumentContinuationCandidate(line: string): boolean {
 	return /^\s*-(?=\s|;|$)/.test(line);
 }
 
-function foldSourceLines(code: string[], strict: boolean): PreparedSourceLines {
+function foldSourceLines(
+	code: string[],
+	strict: boolean,
+	instructionLineBySourceLine?: Array<number | undefined>
+): SourceLine[] {
 	const lines: SourceLine[] = [];
-	const instructionLineBySourceLine = Array<number | undefined>(code.length).fill(undefined);
 	let previousSourceLine: SourceLine | undefined;
 	let previousLineHasContinuations = false;
 
@@ -32,7 +35,7 @@ function foldSourceLines(code: string[], strict: boolean): PreparedSourceLines {
 		if (!isArgumentContinuationCandidate(line)) {
 			const sourceLine = { line, lineNumber };
 			lines.push(sourceLine);
-			instructionLineBySourceLine[lineNumber] = lineNumber;
+			if (instructionLineBySourceLine) instructionLineBySourceLine[lineNumber] = lineNumber;
 			previousSourceLine = sourceLine;
 			previousLineHasContinuations = false;
 			continue;
@@ -79,10 +82,10 @@ function foldSourceLines(code: string[], strict: boolean): PreparedSourceLines {
 			previousLineHasContinuations = true;
 		}
 		previousSourceLine.line = `${previousSourceLine.line} ${tokens.slice(1).join(' ')}`;
-		instructionLineBySourceLine[lineNumber] = previousSourceLine.lineNumber;
+		if (instructionLineBySourceLine) instructionLineBySourceLine[lineNumber] = previousSourceLine.lineNumber;
 	}
 
-	return { lines, instructionLineBySourceLine };
+	return lines;
 }
 
 /**
@@ -93,7 +96,11 @@ function foldSourceLines(code: string[], strict: boolean): PreparedSourceLines {
  * @returns Folded logical lines and a physical-row-to-owner mapping.
  */
 export function prepareSourceLines(code: string[]): PreparedSourceLines {
-	return foldSourceLines(code, false);
+	const instructionLineBySourceLine = Array<number | undefined>(code.length).fill(undefined);
+	return {
+		lines: foldSourceLines(code, false, instructionLineBySourceLine),
+		instructionLineBySourceLine,
+	};
 }
 
 /**
@@ -103,5 +110,5 @@ export function prepareSourceLines(code: string[]): PreparedSourceLines {
  * @returns Logical source lines after comments and continuations are processed.
  */
 export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
-	return foldSourceLines(code, true).lines;
+	return foldSourceLines(code, true);
 }

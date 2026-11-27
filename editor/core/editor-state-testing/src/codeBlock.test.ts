@@ -7,8 +7,9 @@ import { createMockCodeBlock } from './index';
  * and setting lastUpdated to a fixed value
  */
 function normalizeBlock(block: EditorCodeBlock) {
+	const { sourcePreparation: _sourcePreparation, ...snapshotBlock } = block;
 	return {
-		...block,
+		...snapshotBlock,
 		lastUpdated: 0,
 		gaps: Array.from(block.gaps.entries()),
 	};

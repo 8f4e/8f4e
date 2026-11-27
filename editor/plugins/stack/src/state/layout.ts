@@ -61,9 +61,7 @@ export function registerStackPreparation(
 				}
 
 				const sourceLineNumber = directive.isTrailing
-					? graphicData.sourcePreparation
-						? graphicData.sourcePreparation.instructionLineBySourceLine[directive.sourceLineIndex]
-						: directive.sourceLineIndex
+					? graphicData.sourcePreparation.instructionLineBySourceLine[directive.sourceLineIndex]
 					: directive.sourceLineIndex;
 				if (sourceLineNumber === undefined) return;
 				const stackAnalysisLine = findStackAnalysisLine(stackAnalysisLines, sourceLineNumber, directive.isTrailing);
@@ -71,8 +69,8 @@ export function registerStackPreparation(
 					return;
 				}
 
-				const displayRow =
-					graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex] ?? directive.sourceLineIndex;
+				const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex];
+				if (displayRow === undefined) return;
 				const tabStopsByLine = graphicData.tabStopsByLine;
 				const visualLineWidth = getVisualLineWidth(
 					graphicData.code[directive.sourceLineIndex] || '',

@@ -1,6 +1,5 @@
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
-import { prepareSourceLines } from '@8f4e/tokenizer';
 import buildDisplayModel from '../../layout/buildDisplayModel';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
 
@@ -33,7 +32,11 @@ export function createEditorCodeBlock(overrides: Partial<EditorCodeBlock> = {}):
 		cursor,
 		name,
 		code,
-		sourcePreparation: overrides.sourcePreparation ?? prepareSourceLines(code),
+		sourcePreparation: overrides.sourcePreparation ?? {
+			lines: [],
+			instructionLineBySourceLine: [],
+			parsedMemoryLineBySourceLine: [],
+		},
 		tabStopsByLine: code.map(() => []),
 		directiveDisplayState: {},
 		displayModel: buildDisplayModel(code),
