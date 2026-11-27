@@ -195,55 +195,57 @@ entryEnd`);
 		}
 	});
 	it('adds selected line stack analysis when compiler data is available', () => {
-		const selectedBlock = createMockCodeBlock({
-			code: ['push 1', 'push 2', 'add'],
-			name: 'test',
-			cursor: {
-				row: 2,
-				col: 0,
-				y: 0,
-			},
-		});
-		const state = createMockState({
-			compiler: {
-				result: {
-					inputRevision: 0,
-					compiledModules: {
-						test: {
-							ast: { projectBlockId: 0, lines: [] },
-							stackAnalysis: [
-								{
-									lineNumber: 2,
-									instruction: 'add',
-									stackAnalysis: {
-										stackBefore: [
-											{ kind: 'value', valueType: 'int', knownValue: 1 },
-											{ kind: 'value', valueType: 'int', knownValue: 2 },
-										],
-										consumedOperands: [
-											{ kind: 'value', valueType: 'int', knownValue: 1 },
-											{ kind: 'value', valueType: 'int', knownValue: 2 },
-										],
-										producedStackItems: [{ kind: 'value', valueType: 'int' }],
-										stackAfter: [{ kind: 'value', valueType: 'int' }],
-									},
-								},
-							],
-						} as never,
-					},
-				},
-			},
-			project: {
-				selectedCodeBlock: selectedBlock,
-			},
-		});
-		const store = createStateManager(state);
-
-		const tooltip = createTooltip(store, createMockEventDispatcher());
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module test
+push 1
+push 2
+add
+moduleEnd
+entryEnd`);
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
+		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
+		events.dispatch('enterEditMode');
+		const state = store.getState();
+		const selectedBlock = state.project.activeLevel.blocks.find(block => block.name === 'test')!;
+		const addRow = selectedBlock.code.indexOf('add');
+		expect(addRow).toBeGreaterThanOrEqual(0);
+		store.set('compiler.result', {
+			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
+			compiledModules: {
+				test: {
+					ast: { projectBlockId: selectedBlock.creationIndex, lines: [] },
+					stackAnalysis: [
+						{
+							lineNumber: addRow,
+							instruction: 'add',
+							stackAnalysis: {
+								stackBefore: [
+									{ kind: 'value', valueType: 'int', knownValue: 1 },
+									{ kind: 'value', valueType: 'int', knownValue: 2 },
+								],
+								consumedOperands: [
+									{ kind: 'value', valueType: 'int', knownValue: 1 },
+									{ kind: 'value', valueType: 'int', knownValue: 2 },
+								],
+								producedStackItems: [{ kind: 'value', valueType: 'int' }],
+								stackAfter: [{ kind: 'value', valueType: 'int' }],
+							},
+						},
+					],
+				} as never,
+			},
+		});
+		store.set('project.selectedCodeBlock', selectedBlock);
+		store.set('project.selectedCodeBlock.cursor.row', addRow);
 
 		expect(tooltip.getState().text).toEqual([
 			'add (T T -- T)',
@@ -278,66 +280,72 @@ entryEnd`);
 	});
 
 	it('refreshes selected function analysis across recompilation, deletion, and reset', () => {
-		const selectedBlock = createMockCodeBlock({
-			name: 'helper',
-			code: ['function helper', 'param int', 'param int', 'add', 'return', 'functionEnd'],
-			blockType: 'function',
-			creationIndex: 42,
-			cursor: {
-				row: 3,
-				col: 0,
-				y: 0,
-			},
-		});
-		const functionId = createFunctionId('helper', ['int', 'int']);
-		const state = createMockState({
-			compiler: {
-				result: {
-					inputRevision: 0,
-					compiledFunctions: {
-						[createFunctionId('helper', ['float'])]: {
-							id: createFunctionId('helper', ['float']),
-							name: 'helper',
-							ast: { projectBlockId: 99, lines: [] },
-							stackAnalysis: [],
-						} as never,
-						[functionId]: {
-							id: functionId,
-							name: 'helper',
-							ast: { projectBlockId: 42, lines: [] },
-							stackAnalysis: [
-								{
-									lineNumber: 3,
-									instruction: 'add',
-									stackAnalysis: {
-										stackBefore: [
-											{ kind: 'value', valueType: 'int', knownValue: 1 },
-											{ kind: 'value', valueType: 'int', knownValue: 2 },
-										],
-										consumedOperands: [
-											{ kind: 'value', valueType: 'int', knownValue: 1 },
-											{ kind: 'value', valueType: 'int', knownValue: 2 },
-										],
-										producedStackItems: [{ kind: 'value', valueType: 'int' }],
-										stackAfter: [{ kind: 'value', valueType: 'int' }],
-									},
-								},
-							],
-						} as never,
-					},
-				},
-			},
-			project: {
-				selectedCodeBlock: selectedBlock,
-			},
-		});
-		const store = createStateManager(state);
-
-		const tooltip = createTooltip(store, createMockEventDispatcher());
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module caller
+call helper 1 2
+drop
+moduleEnd
+entryEnd
+function helper
+param int
+param int
+add
+return
+functionEnd int`);
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
+		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
+		events.dispatch('enterEditMode');
+		const state = store.getState();
+		const selectedBlock = state.project.activeLevel.blocks.find(
+			block => block.name === 'helper' && block.blockType === 'function'
+		)!;
+		const functionId = createFunctionId('helper', ['int', 'int']);
+		const floatFunctionId = createFunctionId('helper', ['float']);
+		store.set('compiler.result', {
+			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
+			compiledFunctions: {
+				[floatFunctionId]: {
+					id: floatFunctionId,
+					name: 'helper',
+					ast: { projectBlockId: selectedBlock.creationIndex + 1, lines: [] },
+					stackAnalysis: [],
+				} as never,
+				[functionId]: {
+					id: functionId,
+					name: 'helper',
+					ast: { projectBlockId: selectedBlock.creationIndex, lines: [] },
+					stackAnalysis: [
+						{
+							lineNumber: 3,
+							instruction: 'add',
+							stackAnalysis: {
+								stackBefore: [
+									{ kind: 'value', valueType: 'int', knownValue: 1 },
+									{ kind: 'value', valueType: 'int', knownValue: 2 },
+								],
+								consumedOperands: [
+									{ kind: 'value', valueType: 'int', knownValue: 1 },
+									{ kind: 'value', valueType: 'int', knownValue: 2 },
+								],
+								producedStackItems: [{ kind: 'value', valueType: 'int' }],
+								stackAfter: [{ kind: 'value', valueType: 'int' }],
+							},
+						},
+					],
+				} as never,
+			},
+		});
+		store.set('project.selectedCodeBlock', selectedBlock);
+		store.set('project.selectedCodeBlock.cursor.row', 3);
 
 		expect(tooltip.getState().text).toEqual([
 			'add (T T -- T)',
@@ -355,6 +363,7 @@ entryEnd`);
 		const initialFunction = state.compiler.result.compiledFunctions![functionId];
 		store.set('compiler.result', {
 			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
 			compiledFunctions: {
 				[functionId]: {
 					...initialFunction,
@@ -370,10 +379,18 @@ entryEnd`);
 		});
 		expect(tooltip.getState().text).toContain('after: [+int=9]');
 
-		store.set('compiler.result', { ...state.compiler.result, compiledFunctions: {} });
+		store.set('compiler.result', {
+			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
+			compiledFunctions: {},
+		});
 		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
 
-		store.set('compiler.result', { ...state.compiler.result, compiledFunctions: undefined });
+		store.set('compiler.result', {
+			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
+			compiledFunctions: undefined,
+		});
 		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
 	});
 
@@ -750,33 +767,38 @@ function identity
 param int value
 push value
 functionEnd int`;
-		const compile = (text: string) => compileProject(parseProjectSource(text), { includeStackAnalysis: true });
-		const first = await compile(source);
-		const block = createMockCodeBlock({
-			name: 'caller',
-			creationIndex: first.compiledModules.caller.ast.projectBlockId,
-			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
-			cursor: { row: 1, col: 0, y: 0 },
-		});
-		const state = createMockState({
-			compiler: { result: createCompilerResult(first, 0) },
-			project: { selectedCodeBlock: block },
-		});
-		const store = createStateManager(state);
-		const tooltip = createTooltip(store, createEvents());
+		const project = parseProjectSource(source);
+		const first = await compileProject(project, { includeStackAnalysis: true });
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
+		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
+		events.dispatch('enterEditMode');
+		const state = store.getState();
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'caller')!;
+		store.set('compiler.result', createCompilerResult(first, state.compilerInputRevision));
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
+
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (value: int -- int)');
-		store.set(
-			'compiler.result',
-			createCompilerResult(await compile(source.replaceAll('value', 'input')), state.compilerInputRevision)
-		);
+		const updated = await compileProject(parseProjectSource(source.replaceAll('value', 'input')), {
+			includeStackAnalysis: true,
+		});
+		store.set('compiler.result', createCompilerResult(updated, state.compilerInputRevision));
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (input: int -- int)');
 		store.set('project.selectedCodeBlock.cursor.row', 2);
 		expect(tooltip.getState().text[0]).toBe('drop (T -- )');
-		store.set('compiler.result', { ...state.compiler.result, compiledModules: {}, compiledFunctions: {} });
+		store.set('compiler.result', {
+			...state.compiler.result,
+			inputRevision: state.compilerInputRevision,
+			compiledModules: {},
+			compiledFunctions: {},
+		});
 		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
 	});
@@ -799,46 +821,42 @@ moduleEnd
 entryEnd`);
 		const compile = () => compileProject(project, { includeStackAnalysis: true });
 		const compiled = await compile();
-		const [first, second] = project.execution;
-		const inactive = createMockCodeBlock({
-			name: 'voice',
-			creationIndex: first.id,
-			code: first.code,
-			blockType: 'module',
-			cursor: { row: 2, col: 0, y: 0 },
-		});
-		const active = createMockCodeBlock({
-			name: 'voice',
-			creationIndex: second.id,
-			code: second.code,
-			blockType: 'module',
-			cursor: { row: 2, col: 0, y: 0 },
-		});
-		const state = createMockState({
-			compiler: { result: createCompilerResult(compiled, 0) },
-			project: { selectedCodeBlock: inactive },
-		});
-		const store = createStateManager(state);
-		const tooltip = createTooltip(store, createEvents());
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
+		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
+		events.dispatch('enterEditMode');
+		const state = store.getState();
+		const [inactive, active] = state.project.activeLevel.blocks.filter(block => block.name === 'voice');
+		const inactiveStackRow = inactive!.code.indexOf('push 1');
+		const activeStackRow = active!.code.indexOf('push 2');
+		expect(inactiveStackRow).toBeGreaterThanOrEqual(0);
+		expect(activeStackRow).toBeGreaterThanOrEqual(0);
+		store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
+		store.set('project.selectedCodeBlock', inactive!);
+		store.set('project.selectedCodeBlock.cursor.row', inactiveStackRow);
+
 		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
 		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().liveValues).toEqual([]);
 		store.set('project.selectedCodeBlock.cursor.row', 0);
 		expect(tooltip.getState().text).not.toContain('execution order: 1');
 
-		store.set('project.selectedCodeBlock', active);
+		store.set('project.selectedCodeBlock', active!);
+		store.set('project.selectedCodeBlock.cursor.row', activeStackRow);
 		expect(tooltip.getState().text).toContain('after: [+int=2]');
 		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().liveValues).toHaveLength(2);
 		store.set('project.selectedCodeBlock.cursor.row', 0);
 		expect(tooltip.getState().text).toContain('execution order: 1');
 
-		store.set('project.selectedCodeBlock', inactive);
-		store.set('project.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock', inactive!);
+		store.set('project.selectedCodeBlock.cursor.row', inactiveStackRow);
 		project.execution.reverse();
 		store.set('compiler.result', createCompilerResult(await compile(), state.compilerInputRevision));
 		expect(tooltip.getState().text).toContain('after: [+int=1]');
