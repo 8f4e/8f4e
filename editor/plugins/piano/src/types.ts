@@ -1,7 +1,14 @@
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { GlyphIds } from '@8f4e/web-ui';
 
-export interface PianoKeyboard {
+export interface PianoMemoryBindings {
+	pressedKeysListMemory: PlannedMemoryDeclaration;
+	pressedKeyCountMemory: PlannedMemoryDeclaration;
+	pressedKeysListModuleId: string;
+	pressedKeyCountModuleId: string;
+}
+
+export interface PianoKeyboard extends PianoMemoryBindings {
 	x: number;
 	y: number;
 	width: number;
@@ -17,10 +24,6 @@ export interface PianoKeyboard {
 	blackKeyGapWidth: number;
 	blackKeyGapHeight: number;
 	keys: PianoKeyboardKey[];
-	pressedKeysListMemory: PlannedMemoryDeclaration;
-	pressedKeyCountMemory: PlannedMemoryDeclaration;
-	pressedKeysListModuleId: string;
-	pressedKeyCountModuleId: string;
 	startingMidiNote: number;
 }
 
