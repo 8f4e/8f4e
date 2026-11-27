@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { afterEach, describe, expect, it } from 'vitest';
+import { prepareSourceLines } from '@8f4e/tokenizer';
 import initState, { applyCodeBlockSourceEdits, serializeProjectLevel } from '../index';
 import { getCurrentCompiledLineForCodeBlock } from './getCurrentCompiledLineForCodeBlock';
 
@@ -9,8 +10,7 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-async function setup(blockType: 'module' | 'function') {
-	const body = 'push 2\npush 3\nadd';
+async function setup(blockType: 'module' | 'function', body = 'push 2\npush 3\nadd') {
 	const project = parseProjectSource(
 		blockType === 'module'
 			? `8f4e/v1\nentry main\nmodule sample\n${body}\ndrop\nmoduleEnd\nentryEnd`
@@ -37,6 +37,24 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		const line = getCurrentCompiledLineForCodeBlock(block, state, 3)!;
 		expect(line.parsedLine?.instruction).toBe('add');
 		expect(line.stackAnalysisLine?.consumedOperandProducerLines).toEqual([1, 2]);
+	});
+
+	it('maps continuation rows to the owning AST and stack-analysis instruction', async () => {
+		const test = await setup(blockType, 'push\n- 7\npush 2\nadd');
+		const line = getCurrentCompiledLineForCodeBlock(test.block, test.state, 2)!;
+		expect(line.parsedLine).toMatchObject({ instruction: 'push', lineNumber: 1 });
+		expect(line.stackAnalysisLine).toMatchObject({ lineNumber: 1 });
+	});
+
+	it('does not map an incomplete continuation row to unrelated compiler metadata', async () => {
+		const test = await setup(blockType);
+		const incompleteCode = [...test.block.code];
+		const pushRow = incompleteCode.indexOf('push 2');
+		expect(pushRow).toBeGreaterThanOrEqual(0);
+		incompleteCode.splice(pushRow + 1, 0, '-');
+		test.block.sourcePreparation = prepareSourceLines(incompleteCode);
+		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, pushRow + 1)).toBeUndefined();
+		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, pushRow)?.parsedLine?.instruction).toBe('push');
 	});
 
 	it('uses newly compiled source positions after comment lines are inserted', async () => {

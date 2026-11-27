@@ -3,25 +3,23 @@ import isComment from './syntax/isComment';
 import isInstructionLikeLine from './syntax/isInstructionLikeLine';
 import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
-/** Physical source line after comment filtering and argument-continuation folding. */
 export type SourceLine = {
 	line: string;
 	lineNumber: number;
 };
 
-/** Detects physical lines that append arguments to the preceding instruction. */
+export interface PreparedSourceLines {
+	lines: SourceLine[];
+	instructionLineBySourceLine: Array<number | undefined>;
+}
+
 function isArgumentContinuationCandidate(line: string): boolean {
 	return /^\s*-(?=\s|;|$)/.test(line);
 }
 
-/**
- * Removes comments and folds argument-continuation lines into logical source lines.
- *
- * @param code - Source lines to process.
- * @returns Logical source lines after comments and continuations are processed.
- */
-export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
-	const sourceLines: SourceLine[] = [];
+function foldSourceLines(code: string[], strict: boolean): PreparedSourceLines {
+	const lines: SourceLine[] = [];
+	const instructionLineBySourceLine = Array<number | undefined>(code.length).fill(undefined);
 	let previousSourceLine: SourceLine | undefined;
 	let previousLineHasContinuations = false;
 
@@ -32,42 +30,78 @@ export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
 		}
 
 		if (!isArgumentContinuationCandidate(line)) {
-			const sourceLine = {
-				line,
-				lineNumber,
-			};
-			sourceLines.push(sourceLine);
+			const sourceLine = { line, lineNumber };
+			lines.push(sourceLine);
+			instructionLineBySourceLine[lineNumber] = lineNumber;
 			previousSourceLine = sourceLine;
 			previousLineHasContinuations = false;
 			continue;
 		}
 
-		const tokens = parseInstructionTokens(line, lineNumber);
-		const instruction = '-';
+		let tokens: string[];
+		try {
+			tokens = parseInstructionTokens(line, lineNumber);
+		} catch (error) {
+			if (strict) throw error;
+			continue;
+		}
 
+		const instruction = '-';
 		if (!previousSourceLine) {
-			throw new SyntaxIssue(SyntaxErrorCode.INVALID_ARGUMENT, 'Argument continuation has no instruction.', {
-				lineNumber,
-				instruction,
-			});
+			if (strict) {
+				throw new SyntaxIssue(SyntaxErrorCode.INVALID_ARGUMENT, 'Argument continuation has no instruction.', {
+					lineNumber,
+					instruction,
+				});
+			}
+			continue;
 		}
 
 		if (tokens.length < 2) {
-			throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT, 'Missing argument for continuation.', {
-				lineNumber,
-				instruction,
-			});
+			if (strict) {
+				throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT, 'Missing argument for continuation.', {
+					lineNumber,
+					instruction,
+				});
+			}
+			continue;
 		}
 
 		if (!previousLineHasContinuations) {
-			// Remove the original comment once so appended arguments cannot become comment text.
-			previousSourceLine.line = parseInstructionTokens(previousSourceLine.line, previousSourceLine.lineNumber).join(
-				' '
-			);
+			try {
+				previousSourceLine.line = parseInstructionTokens(previousSourceLine.line, previousSourceLine.lineNumber).join(
+					' '
+				);
+			} catch (error) {
+				if (strict) throw error;
+				continue;
+			}
 			previousLineHasContinuations = true;
 		}
 		previousSourceLine.line = `${previousSourceLine.line} ${tokens.slice(1).join(' ')}`;
+		instructionLineBySourceLine[lineNumber] = previousSourceLine.lineNumber;
 	}
 
-	return sourceLines;
+	return { lines, instructionLineBySourceLine };
+}
+
+/**
+ * Prepares editor source rows and maps each continuation row to its owning instruction.
+ * Invalid or incomplete continuation rows are ignored without invalidating unrelated instructions.
+ *
+ * @param code - Physical source lines to prepare.
+ * @returns Folded logical lines and a physical-row-to-owner mapping.
+ */
+export function prepareSourceLines(code: string[]): PreparedSourceLines {
+	return foldSourceLines(code, false);
+}
+
+/**
+ * Removes comments and folds argument-continuation lines, preserving compiler diagnostics for invalid syntax.
+ *
+ * @param code - Source lines to process.
+ * @returns Logical source lines after comments and continuations are processed.
+ */
+export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
+	return foldSourceLines(code, true).lines;
 }

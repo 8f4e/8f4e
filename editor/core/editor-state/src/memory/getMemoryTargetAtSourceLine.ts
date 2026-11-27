@@ -5,7 +5,7 @@ import {
 	isReferenceSlotLine,
 	type MemoryDeclarationLine,
 } from '@8f4e/language-spec';
-import { parseLine } from '@8f4e/tokenizer';
+import { parseLine, prepareSourceLines } from '@8f4e/tokenizer';
 import { getCompiledModuleForCodeBlock } from '../compiler-metadata/getCompiledModuleForCodeBlock';
 import resolveMemoryTarget, { type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
@@ -26,8 +26,12 @@ export default function getMemoryTargetAtSourceLine(
 ): { target: ResolvedMemoryTarget | undefined } | undefined {
 	if (codeBlock.blockType !== 'module') return;
 
-	// Source edits can refresh layout while the previous compilation is still active.
-	const parsed = parseLine(codeBlock.code[sourceLineIndex], sourceLineIndex);
+	const sourcePreparation = codeBlock.sourcePreparation ?? prepareSourceLines(codeBlock.code);
+	const instructionLineNumber = sourcePreparation.instructionLineBySourceLine[sourceLineIndex];
+	if (instructionLineNumber === undefined) return;
+	const logicalLine = sourcePreparation.lines.find(({ lineNumber }) => lineNumber === instructionLineNumber);
+	if (!logicalLine) return;
+	const parsed = parseLine(logicalLine.line, instructionLineNumber);
 	if (!parsed.ok) return;
 	const sourceLine = parsed.value;
 	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
@@ -41,7 +45,7 @@ export default function getMemoryTargetAtSourceLine(
 				: undefined;
 		return {
 			target:
-				target?.reference?.lineNumber === sourceLineIndex && target.reference.type === sourceLine.instruction
+				target?.reference?.lineNumber === instructionLineNumber && target.reference.type === sourceLine.instruction
 					? target
 					: undefined,
 		};
@@ -52,7 +56,7 @@ export default function getMemoryTargetAtSourceLine(
 	const sourceName = getDeclarationName(sourceLine);
 	const memory = plannedModule.declarations.find(
 		({ source }) =>
-			source.lineNumber === sourceLineIndex &&
+			source.lineNumber === instructionLineNumber &&
 			source.instruction === sourceLine.instruction &&
 			getDeclarationName(source) === sourceName
 	);

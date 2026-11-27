@@ -1,5 +1,6 @@
 import type { EditorCodeBlock, EditorDirectiveDefinition, ProjectLevel } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
+import { prepareSourceLines } from '@8f4e/tokenizer';
 import parsePositionDirective from '../../directives/block/positionDirective';
 import { deriveDirectiveFacts } from '../../directives/blockDirectiveRegistry';
 import { parseBlockDirectives } from '../../directives/parseBlockDirectives';
@@ -23,6 +24,7 @@ export function rememberEntry(project: ProjectLevel, block: EditorCodeBlock): vo
 
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: EditorDirectiveDefinition[]): void {
+	block.sourcePreparation = prepareSourceLines(block.code);
 	const [row, col] = clampSourcePosition(block.code, block.cursor.row, block.cursor.col);
 	block.cursor.row = row;
 	block.cursor.col = col;

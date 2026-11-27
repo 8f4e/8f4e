@@ -60,11 +60,13 @@ export function registerStackPreparation(
 					return;
 				}
 
-				const stackAnalysisLine = findStackAnalysisLine(
-					stackAnalysisLines,
-					directive.sourceLineIndex,
-					directive.isTrailing
-				);
+				const sourceLineNumber = directive.isTrailing
+					? graphicData.sourcePreparation
+						? graphicData.sourcePreparation.instructionLineBySourceLine[directive.sourceLineIndex]
+						: directive.sourceLineIndex
+					: directive.sourceLineIndex;
+				if (sourceLineNumber === undefined) return;
+				const stackAnalysisLine = findStackAnalysisLine(stackAnalysisLines, sourceLineNumber, directive.isTrailing);
 				if (!stackAnalysisLine) {
 					return;
 				}
