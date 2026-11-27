@@ -134,9 +134,16 @@ describe('piano plugin', () => {
 		test.store.set('project.selectedCodeBlock', undefined);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
+		const pointerDown = vi.fn();
+		test.events.on('codeBlockPointerDown', pointerDown, { capture: true });
 		test.write.mockClear();
-		test.clickAt(key);
+		// The bottom edge is inside the collapsed block and overlaps the old key's hit area.
+		test.clickAt({
+			x: key.x,
+			y: test.codeBlock.y + test.codeBlock.height - test.state.viewport.y,
+		});
 		expect(test.write).not.toHaveBeenCalled();
+		expect(pointerDown).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ codeBlock: test.codeBlock }));
 	});
 	it('rebinds drawing and interaction after compilation relocates memory without changing layout', async () => {
 		const test = await setup();
