@@ -6,9 +6,13 @@ import { expect, test } from 'vitest';
 import { cdp } from 'vitest/browser';
 import { createMouseInputPlugin } from '../src/index';
 
-test('wheel scrolling pans the viewport while a block is held without moving or editing the block', async () => {
+test.each([
+	{ unit: 'pixels', deltaMode: WheelEvent.DOM_DELTA_PIXEL, deltaX: 17, deltaY: 31, panX: 17, panY: 31 },
+	{ unit: 'lines', deltaMode: WheelEvent.DOM_DELTA_LINE, deltaX: -2, deltaY: 3, panX: -32, panY: 48 },
+	{ unit: 'pages', deltaMode: WheelEvent.DOM_DELTA_PAGE, deltaX: 1, deltaY: -0.5, panX: 512, panY: -192 },
+])('wheel scrolling in $unit pans the viewport without moving or editing a held block', async wheel => {
 	const canvas = document.createElement('canvas');
-	canvas.width = 640;
+	canvas.width = 512;
 	canvas.height = 384;
 	document.body.append(canvas);
 	let editor: Editor | undefined;
@@ -46,16 +50,22 @@ test('wheel scrolling pans the viewport while a block is held without moving or 
 		});
 		try {
 			await expect.poll(() => state.project.draggedCodeBlock?.name).toBe('target');
-			await input.send('Input.dispatchMouseEvent', {
-				type: 'mouseWheel',
-				...point,
-				buttons: 1,
-				deltaX: 17,
-				deltaY: 31,
-			});
+			const { deltaMode, deltaX, deltaY, panX, panY } = wheel;
+			if (deltaMode === WheelEvent.DOM_DELTA_PIXEL) {
+				await input.send('Input.dispatchMouseEvent', {
+					type: 'mouseWheel',
+					...point,
+					buttons: 1,
+					deltaX,
+					deltaY,
+				});
+			} else {
+				const event = new WheelEvent('wheel', { cancelable: true, buttons: 1, deltaMode, deltaX, deltaY });
+				expect(canvas.dispatchEvent(event)).toBe(false);
+			}
 			await expect
 				.poll(() => ({ viewport: { x: state.viewport.x, y: state.viewport.y }, block: { x: block.x, y: block.y } }))
-				.toEqual({ viewport: { x: viewport.x + 17, y: viewport.y + 31 }, block: blockPosition });
+				.toEqual({ viewport: { x: viewport.x + panX, y: viewport.y + panY }, block: blockPosition });
 		} finally {
 			await input.send('Input.dispatchMouseEvent', {
 				type: 'mouseReleased',
