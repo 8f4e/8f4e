@@ -12,9 +12,11 @@ const plugin = createMouseInputPlugin({ inputTarget: canvas, captureWheel: true 
 ```
 
 The plugin can load after the first render on fine- and coarse-pointer devices. It also forwards browser-generated mouse
-events from touch taps. `captureWheel: false` leaves wheel scrolling to the surrounding page. Each captured wheel event
-forwards its signed `deltaX` and `deltaY` to pan the viewport independently of block dragging, unless a menu or modal
-dialog blocks input. The viewport stays at its last pixel position when scrolling pauses. Disposal removes listeners.
+events from touch taps. `captureWheel: false` leaves wheel scrolling to the surrounding page. Captured wheel events pan
+the viewport independently of block dragging, unless a menu or modal dialog blocks input. Pixel deltas pass through
+directly. Line deltas use a fixed 16 CSS pixels per line on both axes, matching the default editor font's line height.
+Page deltas use the input element's client width for horizontal movement and client height for vertical movement.
+The viewport stays at its last pixel position when scrolling pauses. Disposal removes listeners.
 
 Run the Nx `build`, `test`, `typecheck`, and `test:screenshot` targets. Unit tests cover translation and cleanup;
 native browser tests cover focusing, viewport panning while a block is held, and page scrolling.

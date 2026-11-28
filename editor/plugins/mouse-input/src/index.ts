@@ -8,6 +8,10 @@ const POINTER_EVENTS = {
 	contextmenu: 'contextmenu',
 } as const;
 
+const DOM_DELTA_LINE = 1;
+const DOM_DELTA_PAGE = 2;
+const WHEEL_LINE_HEIGHT_PX = 16;
+
 export function createMouseInputPlugin({
 	inputTarget,
 	captureWheel = true,
@@ -53,9 +57,20 @@ export function createMouseInputPlugin({
 
 			function onWheelEvent(event: WheelEvent) {
 				event.preventDefault();
+				const deltaMode = event.deltaMode;
+				let { deltaX, deltaY } = event;
+
+				if (deltaMode === DOM_DELTA_LINE) {
+					deltaX *= WHEEL_LINE_HEIGHT_PX;
+					deltaY *= WHEEL_LINE_HEIGHT_PX;
+				} else if (deltaMode === DOM_DELTA_PAGE) {
+					deltaX *= inputTarget.clientWidth;
+					deltaY *= inputTarget.clientHeight;
+				}
+
 				events.dispatch('viewportscroll', {
-					deltaX: event.deltaX,
-					deltaY: event.deltaY,
+					deltaX,
+					deltaY,
 					stopPropagation: false,
 				} satisfies ViewportScrollEvent);
 			}

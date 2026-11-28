@@ -39,7 +39,7 @@ function setup(captureWheel = true) {
 		inputTarget.dispatchEvent(event);
 		return event;
 	};
-	const wheel = (deltaX = 3, deltaY = 5) => mouse('wheel', { deltaX, deltaY });
+	const wheel = (deltaX = 3, deltaY = 5, deltaMode = 0) => mouse('wheel', { deltaX, deltaY, deltaMode });
 	return { events, inputTarget, mouse, wheel, dispose };
 }
 
@@ -77,22 +77,27 @@ describe('mouse input', () => {
 	});
 
 	it.each([
-		[3, 5],
-		[-7, 9],
-		[8, -4],
-	])('forwards signed wheel deltas (%i, %i) as a viewport scroll', (deltaX, deltaY) => {
-		const test = setup();
-		expect(test.wheel(deltaX, deltaY).defaultPrevented).toBe(true);
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportscroll', {
-			deltaX,
-			deltaY,
-			stopPropagation: false,
-		});
-	});
+		{ unit: 'pixels', mode: 0, deltaX: 3.5, deltaY: -5.25, expectedX: 3.5, expectedY: -5.25 },
+		{ unit: 'lines', mode: 1, deltaX: -2, deltaY: 3, expectedX: -32, expectedY: 48 },
+		{ unit: 'pages', mode: 2, deltaX: 1, deltaY: -0.5, expectedX: 640, expectedY: -240 },
+	])(
+		'normalizes signed wheel deltas in $unit for viewport scrolling',
+		({ mode, deltaX, deltaY, expectedX, expectedY }) => {
+			const test = setup();
+			expect(test.wheel(deltaX, deltaY, mode).defaultPrevented).toBe(true);
+			expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportscroll', {
+				deltaX: expectedX,
+				deltaY: expectedY,
+				stopPropagation: false,
+			});
+		}
+	);
 
 	it('leaves wheel input to the page when wheel capture is disabled', () => {
 		const test = setup(false);
-		expect(test.wheel().defaultPrevented).toBe(false);
+		for (const mode of [0, 1, 2]) {
+			expect(test.wheel(3, 5, mode).defaultPrevented).toBe(false);
+		}
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 		test.mouse('mousedown');
 		expect(test.events.dispatch).toHaveBeenCalledOnce();
